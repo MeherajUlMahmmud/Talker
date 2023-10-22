@@ -9,7 +9,7 @@ package-lock.json
 # testing
 /coverage
 
-.env/
+.env
 
 # production
 /build
