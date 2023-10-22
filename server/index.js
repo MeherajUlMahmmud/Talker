@@ -21,7 +21,7 @@ const server = http.createServer(app);
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 
 const io = new Server(server, {
 	cors: {

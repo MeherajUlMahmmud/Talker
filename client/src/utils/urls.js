@@ -1,7 +1,7 @@
 var BASE_URL, MAT_URL;
 
-BASE_URL = "http://localhost:5000/api";
-MAT_URL = "http://localhost:5000";
+BASE_URL = "http://localhost:8000/api";
+MAT_URL = "http://localhost:8000";
 
 export { BASE_URL, MAT_URL };
 

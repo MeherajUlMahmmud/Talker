@@ -2,18 +2,19 @@ import React, { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import { loadStorage, saveStorage } from '../utils/persistLocalStorage'
 import { useNavigate } from 'react-router-dom';
-import { sendGetRequest } from '../apis/api';
-import { ASSOCIATED_ROOMS, PROFILE_URL } from '../utils/urls';
+import { sendGetRequest, sendPostRequest } from '../apis/api';
+import { ASSOCIATED_ROOMS, CREATE_ROOM_URL, PROFILE_URL } from '../utils/urls';
 import { formatDateTime } from '../utils/helper';
 
 function HomePage() {
 	const token = loadStorage('token');
-	const [user, setUser] = useState(loadStorage('user'));
 	const navigate = useNavigate();
 
+	const [user, setUser] = useState(loadStorage('user'));
 	const [rooms, setRooms] = useState([])
-	const [activeRoom, setActiveRoom] = useState({})
+	const [activeRoom, setActiveRoom] = useState(null)
 
+	const [showCreateRoomModal, setShowCreateRoomModal] = useState(false)
 	const [showAddMemberModal, setShowAddMemberModal] = useState(false)
 
 	const [isLoading, setIsLoading] = useState(false);
@@ -65,8 +66,8 @@ function HomePage() {
 				<Navbar user={user} />
 				<div className="flex flex-row justify-between bg-white">
 					<div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
-						{
-							rooms.map((room) => {
+						<div className='flex flex-col justify-center'>
+							{rooms.map((room) => {
 								return (
 									<div
 										className={`flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer ${activeRoom?._id === room?._id ? 'bg-gray-200' : ''}`}
@@ -87,161 +88,186 @@ function HomePage() {
 										</div>
 									</div>
 								)
-							})
-						}
+							})}
+							<div>
+								<button
+									type='button'
+									onClick={() => setShowCreateRoomModal(true)}
+									className='bg-blue-500 text-white px-3 py-1 rounded-md mt-5'
+								>
+									Create Room
+								</button>
+							</div>
+						</div>
 					</div>
 					<div className="w-full px-5 flex flex-col justify-between">
-						<div className="flex flex-col mt-5">
-							<div className="flex justify-end mb-4">
-								<div
-									className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-								>
-									Welcome to group everyone !
-								</div>
-								<img
-									src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-									className="object-cover h-8 w-8 rounded-full"
-									alt=""
-								/>
-							</div>
-							<div className="flex justify-end mb-4">
-								<div
-									className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-								>
-									Welcome to group everyone !
-								</div>
-								<img
-									src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-									className="object-cover h-8 w-8 rounded-full"
-									alt=""
-								/>
-							</div>
-							<div className="flex justify-end mb-4">
-								<div
-									className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-								>
-									Welcome to group everyone !
-								</div>
-								<img
-									src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-									className="object-cover h-8 w-8 rounded-full"
-									alt=""
-								/>
-							</div>
-							<div className="flex justify-end mb-4">
-								<div
-									className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-								>
-									Welcome to group everyone !
-								</div>
-								<img
-									src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-									className="object-cover h-8 w-8 rounded-full"
-									alt=""
-								/>
-							</div>
-							<div className="flex justify-start mb-4">
-								<img
-									src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-									className="object-cover h-8 w-8 rounded-full"
-									alt=""
-								/>
-								<div
-									className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
-								>
-									Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
-									at praesentium, aut ullam delectus odio error sit rem. Architecto
-									nulla doloribus laborum illo rem enim dolor odio saepe,
-									consequatur quas?
-								</div>
-							</div>
-							<div className="flex justify-end mb-4">
-								<div>
-									<div
-										className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-									>
-										Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-										Magnam, repudiandae.
-									</div>
+						{
+							activeRoom && (
+								<>
+									<div className="flex flex-col mt-5">
+										<div className="flex justify-end mb-4">
+											<div
+												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+											>
+												Welcome to group everyone !
+											</div>
+											<img
+												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+												className="object-cover h-8 w-8 rounded-full"
+												alt=""
+											/>
+										</div>
+										<div className="flex justify-end mb-4">
+											<div
+												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+											>
+												Welcome to group everyone !
+											</div>
+											<img
+												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+												className="object-cover h-8 w-8 rounded-full"
+												alt=""
+											/>
+										</div>
+										<div className="flex justify-end mb-4">
+											<div
+												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+											>
+												Welcome to group everyone !
+											</div>
+											<img
+												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+												className="object-cover h-8 w-8 rounded-full"
+												alt=""
+											/>
+										</div>
+										<div className="flex justify-end mb-4">
+											<div
+												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+											>
+												Welcome to group everyone !
+											</div>
+											<img
+												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+												className="object-cover h-8 w-8 rounded-full"
+												alt=""
+											/>
+										</div>
+										<div className="flex justify-start mb-4">
+											<img
+												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+												className="object-cover h-8 w-8 rounded-full"
+												alt=""
+											/>
+											<div
+												className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
+											>
+												Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
+												at praesentium, aut ullam delectus odio error sit rem. Architecto
+												nulla doloribus laborum illo rem enim dolor odio saepe,
+												consequatur quas?
+											</div>
+										</div>
+										<div className="flex justify-end mb-4">
+											<div>
+												<div
+													className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+												>
+													Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+													Magnam, repudiandae.
+												</div>
 
-									<div
-										className="mt-4 mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-									>
-										Lorem ipsum dolor sit amet consectetur adipisicing elit.
-										Debitis, reiciendis!
+												<div
+													className="mt-4 mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+												>
+													Lorem ipsum dolor sit amet consectetur adipisicing elit.
+													Debitis, reiciendis!
+												</div>
+											</div>
+											<img
+												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+												className="object-cover h-8 w-8 rounded-full"
+												alt=""
+											/>
+										</div>
+										<div className="flex justify-start mb-4">
+											<img
+												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+												className="object-cover h-8 w-8 rounded-full"
+												alt=""
+											/>
+											<div
+												className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
+											>
+												happy holiday guys!
+											</div>
+										</div>
 									</div>
-								</div>
-								<img
-									src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-									className="object-cover h-8 w-8 rounded-full"
-									alt=""
-								/>
-							</div>
-							<div className="flex justify-start mb-4">
-								<img
-									src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-									className="object-cover h-8 w-8 rounded-full"
-									alt=""
-								/>
-								<div
-									className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
-								>
-									happy holiday guys!
-								</div>
-							</div>
-						</div>
-						<div className="py-5">
-							<input
-								className="w-full bg-gray-300 py-5 px-3 rounded-xl"
-								type="text"
-								placeholder="type your message here..."
-							/>
-						</div>
+									<div className="py-5">
+										<input
+											className="w-full bg-gray-300 py-5 px-3 rounded-xl"
+											type="text"
+											placeholder="type your message here..."
+										/>
+									</div>
+								</>
+							)
+						}
 					</div>
 					<div className="w-2/5 border-l-2 px-5">
-						<div className="flex flex-col">
-							<div className="font-semibold text-xl py-1">
-								{activeRoom && activeRoom?.name}
-							</div>
-							<small className='py-2'>
-								Created: {activeRoom && formatDateTime(activeRoom?.createdAt)}
-							</small>
-							<hr />
-							<div>
-								<div className='flex flex-row justify-between items-center py-2'>
-									<h3 className='font-semibold py-2'>Members</h3>
-									<button
-										type='button'
-										onClick={() => setShowAddMemberModal(true)}
-										className='bg-blue-500 text-white px-3 py-1 rounded-md'>Add</button>
-								</div>
-								<div>
-									{
-										activeRoom?.members?.map((member) => {
-											return (
-												<div className="flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer">
-													<div className="w-1/4 mx-2">
-														<img
-															src="https://via.placeholder.com/150"
-															className="object-cover h-12 w-12 rounded-full"
-															alt=""
-														/>
-													</div>
-													<div className="w-full">
-														<div className="text-lg font-semibold">
-															{member?.username} {activeRoom?.owner?.username === member?.username ? '(owner)' : ''}
+						{
+							activeRoom && (
+								<div className="flex flex-col">
+									<div className="font-semibold text-xl py-1">
+										{activeRoom && activeRoom?.name}
+									</div>
+									<small className='py-2'>
+										Created: {activeRoom && formatDateTime(activeRoom?.createdAt)}
+									</small>
+									<hr />
+									<div>
+										<div className='flex flex-row justify-between items-center py-2'>
+											<h3 className='font-semibold py-2'>Members</h3>
+											<button
+												type='button'
+												onClick={() => setShowAddMemberModal(true)}
+												className='bg-blue-500 text-white px-3 py-1 rounded-md'>Add</button>
+										</div>
+										<div>
+											{
+												activeRoom?.members?.map((member) => {
+													return (
+														<div className="flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer">
+															<div className="w-1/4 mx-2">
+																<img
+																	src="https://via.placeholder.com/150"
+																	className="object-cover h-12 w-12 rounded-full"
+																	alt=""
+																/>
+															</div>
+															<div className="w-full">
+																<div className="text-lg font-semibold">
+																	{member?.username} {activeRoom?.owner?.username === member?.username ? '(owner)' : ''}
+																</div>
+															</div>
 														</div>
-													</div>
-												</div>
-											)
-										})
-									}
+													)
+												})
+											}
+										</div>
+									</div>
 								</div>
-							</div>
-						</div>
+							)
+						}
 					</div>
 				</div>
 			</div>
+			{
+				showCreateRoomModal && <CreateRoomModal
+					token={token}
+					setShowCreateRoomModal={setShowCreateRoomModal}
+				/>
+			}
 			{
 				showAddMemberModal && <AddMemberModal
 					token={token}
@@ -250,6 +276,69 @@ function HomePage() {
 				/>
 			}
 		</>
+	)
+}
+
+const CreateRoomModal = ({ token, setShowCreateRoomModal }) => {
+	const [name, setName] = useState('')
+
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState("");
+
+	const handleCreateRoom = (e) => {
+		e.preventDefault();
+
+		setIsLoading(true);
+		setError("");
+
+		sendPostRequest(CREATE_ROOM_URL, { roomName: name }, token)
+			.then((res) => {
+				console.log(res?.data);
+				setIsLoading(false);
+				setShowCreateRoomModal(false);
+			})
+			.catch((err) => {
+				console.log(err);
+				setError(err?.response?.data?.message || "Something went wrong");
+				setIsLoading(false);
+			});
+	}
+
+	return (
+		<div className='fixed top-0 left-0 h-screen w-screen bg-black bg-opacity-50 flex justify-center items-center'>
+			<div className='bg-white p-5 rounded-md w-full md:w-1/2 lg:w-1/3'>
+				<div className='flex flex-row justify-between items-center'>
+					<h3 className='font-semibold'>Create Room</h3>
+					<button
+						type='button'
+						onClick={() => setShowCreateRoomModal(false)}
+						className='bg-red-500 text-white px-3 py-1 rounded-md'>Close</button>
+				</div>
+				<form onSubmit={handleCreateRoom}>
+					<div className='flex flex-col'>
+						<div className='py-2'>
+							<label htmlFor='name'>Name</label>
+							<input
+								type='text'
+								name='name'
+								id='name'
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								className='py-2 px-3 rounded-md border-2 border-gray-300'
+							/>
+						</div>
+						<div className='py-2'>
+							<button
+								type='submit'
+								className='bg-blue-500 text-white px-3 py-1 rounded-md'
+							>
+								{isLoading ? 'Creating...' : 'Create'}
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
 	)
 }
 

@@ -5,7 +5,6 @@ const roomSchema = new schema({
 	name: {
 		type: String,
 		required: true,
-		unique: true,
 	},
 	description: String,
 	owner: {
