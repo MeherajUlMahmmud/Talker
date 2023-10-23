@@ -139,7 +139,7 @@ app.get('/api/room/associated/:userId', authorizeLoggedInUser, async (req, res) 
 });
 
 // Endpoint to get all messages for a room
-app.get('/api/room-messages/:roomId', authorizeLoggedInUser, async (req, res) => {
+app.get('/api/room/messages/:roomId', authorizeLoggedInUser, async (req, res) => {
 	const roomId = req.params.roomId;
 
 	try {
@@ -152,4 +152,4 @@ app.get('/api/room-messages/:roomId', authorizeLoggedInUser, async (req, res) =>
 	}
 });
 
-app.listen(PORT, () => `Server is running on port ${PORT}`);
+server.listen(PORT, () => `Server is running on port ${PORT}`);

@@ -1,50 +1,52 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { sendAuthRequest } from '../apis/api';
-import { loadStorage, saveStorage } from '../utils/persistLocalStorage';
-import { LOGIN_URL } from '../utils/urls';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { loadStorage, saveStorage } from "../../utils/persistLocalStorage";
+import { sendAuthRequest } from "../../apis/api";
+import { SIGNUP_URL } from "../../utils/urls";
+import Navbar from "../../components/Navbar";
 
-function LoginPage() {
-	const token = loadStorage('token');
+const SignUpPage = () => {
+	const user = loadStorage("user");
 	const navigate = useNavigate();
 
 	const [inputs, setInputs] = useState({
 		username: "",
 		password: "",
 	});
+
+	const [error, setError] = useState(null);
 	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
 
 	useEffect(() => {
-		if (token) {
-			navigate("/");
+		if (user) {
+			navigate("/login");
 		}
-	}, [token]);
+	}, [user, navigate]);
 
 	const handleChange = (e) => {
 		setInputs({ ...inputs, [e.target.name]: e.target.value });
 	};
 
-	const handleSubmit = (e) => {
+	const handleSignUp = (e) => {
 		e.preventDefault();
 		console.log(inputs);
 
 		setError("");
 		setIsLoading(true);
 
-		sendAuthRequest(LOGIN_URL, inputs)
+		sendAuthRequest(SIGNUP_URL, inputs)
 			.then((res) => {
 				console.log(res);
-				saveStorage("token", res.data.token);
+				saveStorage("user", res.data.data);
 				setIsLoading(false);
-				navigate("/");
+				navigate("/login");
 			})
 			.catch((err) => {
-				console.log(err);
-				setError(err.response.data.message);
+				console.log(err?.response);
+				setError(err?.response?.data?.detail || "Something went wrong");
 				setIsLoading(false);
 			});
+
 	};
 
 	return (
@@ -52,11 +54,11 @@ function LoginPage() {
 			<Navbar />
 			<div className="flex flex-col  px-6 py-12 lg:px-8">
 				<div className="sm:mx-auto sm:w-full sm:max-w-sm">
-					<h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign in to your account</h2>
+					<h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Create a New Account</h2>
 				</div>
 
 				<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-					<form className="space-y-6" onSubmit={handleSubmit} method="POST">
+					<form className="space-y-6" onSubmit={handleSignUp} method="POST">
 						<div>
 							<label for="username" className="block text-sm font-medium leading-6 text-gray-900">
 								Username
@@ -82,7 +84,6 @@ function LoginPage() {
 									id="password"
 									name="password"
 									type="password"
-									autocomplete="current-password"
 									onChange={(e) => handleChange(e)}
 									required
 									className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
@@ -95,19 +96,19 @@ function LoginPage() {
 								disabled={isLoading}
 								className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500"
 							>
-								Sign in
+								Sign Up
 							</button>
 						</div>
 					</form>
 
 					<p className="mt-10 text-center text-sm text-gray-500">
-						Don't have an account?
-						<a href="/sign-up" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Sign Up</a>
+						Already have an account?
+						<a href="/sign-up" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Sign In</a>
 					</p>
 				</div>
 			</div>
 		</div>
-	)
-}
+	);
+};
 
-export default LoginPage
+export default SignUpPage;

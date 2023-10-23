@@ -16,8 +16,7 @@ export const isAuthorized = (error) => {
 
 export const logout = () => {
 	delStorage("user");
-	delStorage("tokens");
-	delStorage("refreshToken");
+	delStorage("token");
 };
 
 export const calculateTimeAgo = (date) => {

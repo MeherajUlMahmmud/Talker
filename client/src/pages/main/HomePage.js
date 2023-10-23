@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import Navbar from '../components/Navbar'
-import { loadStorage, saveStorage } from '../utils/persistLocalStorage'
+import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
 import { useNavigate } from 'react-router-dom';
-import { sendGetRequest, sendPostRequest } from '../apis/api';
-import { ASSOCIATED_ROOMS, CREATE_ROOM_URL, PROFILE_URL } from '../utils/urls';
-import { formatDateTime } from '../utils/helper';
+import { sendGetRequest, sendPostRequest } from '../../apis/api';
+import { ASSOCIATED_ROOMS, CREATE_ROOM_URL, PROFILE_URL } from '../../utils/urls';
+import { formatDateTime } from '../../utils/helper';
+import Navbar from '../../components/Navbar';
 
 function HomePage() {
 	const token = loadStorage('token');
@@ -40,7 +40,7 @@ function HomePage() {
 			})
 			.catch((err) => {
 				console.log(err);
-				setError(err?.response?.data?.message || "Something went wrong");
+				setError(err?.response?.data || "Something went wrong");
 				setIsLoading(false);
 			});
 	}
@@ -51,11 +51,11 @@ function HomePage() {
 				console.log(res?.data);
 
 				setRooms(res?.data?.rooms)
-				setActiveRoom(res?.data?.rooms[0] || {})
+				setActiveRoom(res?.data?.rooms[0] || null)
 			})
 			.catch((err) => {
 				console.log(err);
-				setError(err?.response?.data?.message || "Something went wrong");
+				setError(err?.response?.data || "Something went wrong");
 				setIsLoading(false);
 			});
 	}
