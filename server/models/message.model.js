@@ -7,6 +7,10 @@ const messageSchema = new schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'User',
 	},
+	room: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Room',
+	},
 	timestamp: {
 		type: Date,
 		default: Date.now,

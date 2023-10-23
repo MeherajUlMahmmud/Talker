@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
 import { useNavigate } from 'react-router-dom';
+import socketIO from 'socket.io-client';
+import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
 import { sendGetRequest, sendPostRequest } from '../../apis/api';
 import { ASSOCIATED_ROOMS, CREATE_ROOM_URL, PROFILE_URL } from '../../utils/urls';
 import { formatDateTime } from '../../utils/helper';
@@ -9,15 +10,21 @@ import Navbar from '../../components/Navbar';
 function HomePage() {
 	const token = loadStorage('token');
 	const navigate = useNavigate();
+	const socket = socketIO.connect('http://localhost:8000');
 
 	const [user, setUser] = useState(loadStorage('user'));
 	const [rooms, setRooms] = useState([])
 	const [activeRoom, setActiveRoom] = useState(null)
+	const [activeRoomMembers, setActiveRoomMembers] = useState([])
+
+	const [messages, setMessages] = useState([]);
 
 	const [showCreateRoomModal, setShowCreateRoomModal] = useState(false)
 	const [showAddMemberModal, setShowAddMemberModal] = useState(false)
+	const [message, setMessage] = useState('');
 
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 
 	useEffect(() => {
@@ -30,6 +37,24 @@ function HomePage() {
 			navigate('/login')
 		}
 	}, [token])
+
+	useEffect(() => {
+		if (activeRoom) {
+			setIsLoadingMessages(true);
+			socket.emit('joinRoom', { room_id: activeRoom?._id });
+			fetchRoomMessages()
+			fetchRoomMembers()
+			setIsLoadingMessages(false);
+		}
+	}, [activeRoom])
+
+	useEffect(() => {
+		socket.on('messageResponse', (data) => setMessages([...messages, data]));
+
+		socket.on('error', (data) => {
+			console.log(data);
+		});
+	}, [socket]);
 
 	const fetchUser = (e) => {
 		sendGetRequest(PROFILE_URL, token)
@@ -49,9 +74,8 @@ function HomePage() {
 		sendGetRequest(ASSOCIATED_ROOMS + '/' + user?._id, token)
 			.then((res) => {
 				console.log(res?.data);
-
 				setRooms(res?.data?.rooms)
-				setActiveRoom(res?.data?.rooms[0] || null)
+				setActiveRoom(res?.data?.rooms[0])
 			})
 			.catch((err) => {
 				console.log(err);
@@ -59,6 +83,42 @@ function HomePage() {
 				setIsLoading(false);
 			});
 	}
+
+	const fetchRoomMessages = () => {
+		sendGetRequest('/room/messages/' + activeRoom?._id, token)
+			.then((res) => {
+				console.log(res?.data);
+				setMessages(res?.data?.messages)
+			})
+			.catch((err) => {
+				console.log(err);
+				setError(err?.response?.data || "Something went wrong");
+				setIsLoadingMessages(false);
+			});
+	}
+
+	const fetchRoomMembers = () => {
+		sendGetRequest('/room/members/' + activeRoom?._id, token)
+			.then((res) => {
+				console.log(res?.data);
+				setActiveRoomMembers(res?.data?.members)
+			})
+			.catch((err) => {
+				console.log(err);
+				setError(err?.response?.data || "Something went wrong");
+				setIsLoadingMessages(false);
+			});
+	}
+
+	const handleSendMessage = (e) => {
+		e.preventDefault();
+		socket.emit('message', {
+			message: message,
+			user_id: user?._id,
+			room_id: activeRoom?._id,
+		});
+		setMessage('');
+	};
 
 	return (
 		<>
@@ -72,7 +132,9 @@ function HomePage() {
 									<div
 										className={`flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer ${activeRoom?._id === room?._id ? 'bg-gray-200' : ''}`}
 										key={room?._id}
-										onClick={() => setActiveRoom(room)}
+										onClick={() => {
+											setActiveRoom(room);
+										}}
 									>
 										<div className="w-1/4">
 											<img
@@ -105,110 +167,73 @@ function HomePage() {
 							activeRoom && (
 								<>
 									<div className="flex flex-col mt-5">
-										<div className="flex justify-end mb-4">
-											<div
-												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-											>
-												Welcome to group everyone !
-											</div>
-											<img
-												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-												className="object-cover h-8 w-8 rounded-full"
-												alt=""
-											/>
-										</div>
-										<div className="flex justify-end mb-4">
-											<div
-												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-											>
-												Welcome to group everyone !
-											</div>
-											<img
-												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-												className="object-cover h-8 w-8 rounded-full"
-												alt=""
-											/>
-										</div>
-										<div className="flex justify-end mb-4">
-											<div
-												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-											>
-												Welcome to group everyone !
-											</div>
-											<img
-												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-												className="object-cover h-8 w-8 rounded-full"
-												alt=""
-											/>
-										</div>
-										<div className="flex justify-end mb-4">
-											<div
-												className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-											>
-												Welcome to group everyone !
-											</div>
-											<img
-												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-												className="object-cover h-8 w-8 rounded-full"
-												alt=""
-											/>
-										</div>
-										<div className="flex justify-start mb-4">
-											<img
-												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-												className="object-cover h-8 w-8 rounded-full"
-												alt=""
-											/>
-											<div
-												className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
-											>
-												Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
-												at praesentium, aut ullam delectus odio error sit rem. Architecto
-												nulla doloribus laborum illo rem enim dolor odio saepe,
-												consequatur quas?
-											</div>
-										</div>
-										<div className="flex justify-end mb-4">
-											<div>
-												<div
-													className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-												>
-													Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-													Magnam, repudiandae.
+										{
+											isLoadingMessages ? (
+												<div className='flex justify-center items-center '>
+													Loading messages...
 												</div>
-
-												<div
-													className="mt-4 mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-												>
-													Lorem ipsum dolor sit amet consectetur adipisicing elit.
-													Debitis, reiciendis!
-												</div>
-											</div>
-											<img
-												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-												className="object-cover h-8 w-8 rounded-full"
-												alt=""
-											/>
-										</div>
-										<div className="flex justify-start mb-4">
-											<img
-												src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-												className="object-cover h-8 w-8 rounded-full"
-												alt=""
-											/>
-											<div
-												className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
-											>
-												happy holiday guys!
-											</div>
-										</div>
+											) : (
+												messages.map((message) => {
+													return (
+														message?.sender?._id === user?._id ? (
+															<div className="flex justify-end mb-4">
+																<div className='flex flex-col'>
+																	<div
+																		className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+																	>
+																		{message?.text}
+																	</div>
+																	<small>
+																		{formatDateTime(message?.timestamp)}
+																	</small>
+																</div>
+																{/* <p
+																	className="h-8 w-8 rounded-full"
+																	alt=""
+																>
+																	{message?.sender?.username[0]?.toUpperCase()}
+																</p> */}
+															</div>
+														) : (
+															<div className="flex justify-start mb-4">
+																{/* <p
+																	className="h-8 w-8 rounded-full"
+																	alt=""
+																>
+																	{message?.sender?.username[0]?.toUpperCase()}
+																</p> */}
+																<div className='flex flex-col'>
+																	<div
+																		className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
+																	>
+																		{message?.text}
+																	</div>
+																	<small>
+																		{formatDateTime(message?.timestamp)}
+																	</small>
+																</div>
+															</div>
+														)
+													)
+												})
+											)
+										}
 									</div>
-									<div className="py-5">
+									<div className="py-5 flex ">
 										<input
-											className="w-full bg-gray-300 py-5 px-3 rounded-xl"
+											className="w-full bg-gray-300 py-5 px-3 rounded-xl outline-none"
 											type="text"
 											placeholder="type your message here..."
+											value={message}
+											onChange={(e) => setMessage(e.target.value)}
 										/>
+										<button
+											type="button"
+											onClick={(e) => handleSendMessage(e)}
+											className="bg-blue-400 text-white px-5 py-5 rounded-xl ml-2"
+										>
+											Send
+										</button>
 									</div>
 								</>
 							)
@@ -235,7 +260,7 @@ function HomePage() {
 										</div>
 										<div>
 											{
-												activeRoom?.members?.map((member) => {
+												activeRoomMembers?.map((member) => {
 													return (
 														<div className="flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer">
 															<div className="w-1/4 mx-2">
@@ -271,7 +296,8 @@ function HomePage() {
 			{
 				showAddMemberModal && <AddMemberModal
 					token={token}
-					members={activeRoom?.members}
+					room={activeRoom}
+					members={activeRoomMembers}
 					setShowAddMemberModal={setShowAddMemberModal}
 				/>
 			}
@@ -342,20 +368,22 @@ const CreateRoomModal = ({ token, setShowCreateRoomModal }) => {
 	)
 }
 
-const AddMemberModal = ({ token, members, setShowAddMemberModal }) => {
+const AddMemberModal = ({ token, room, members, setShowAddMemberModal }) => {
 	const [allUsers, setAllUsers] = useState([])
+	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
 		fetchAllUsers()
 	}, [])
 
 	const fetchAllUsers = () => {
-		sendGetRequest('/users', token)
+		sendGetRequest('/user/list', token)
 			.then((res) => {
 				console.log(res?.data);
 				setAllUsers(res?.data?.users)
 
 				filterUsers(res?.data?.users)
+				setIsLoading(false);
 			})
 			.catch((err) => {
 				console.log(err);
@@ -377,7 +405,15 @@ const AddMemberModal = ({ token, members, setShowAddMemberModal }) => {
 	};
 
 	const handleAddMember = (member) => {
-		console.log(member);
+		sendPostRequest('/room/add-member', { roomId: room?._id, userId: member?._id }, token)
+			.then((res) => {
+				console.log(res?.data);
+				setShowAddMemberModal(false);
+			})
+			.catch((err) => {
+				console.log(err);
+				setShowAddMemberModal(false);
+			});
 	};
 
 	return (
@@ -392,7 +428,7 @@ const AddMemberModal = ({ token, members, setShowAddMemberModal }) => {
 				</div>
 				<div className='flex flex-col'>
 					{
-						allUsers.map((user) => {
+						!isLoading && allUsers.map((user) => {
 							return (
 								<div
 									key={user?._id}
@@ -408,9 +444,6 @@ const AddMemberModal = ({ token, members, setShowAddMemberModal }) => {
 											<div className='font-semibold'>{user?.username}</div>
 										</div>
 									</div>
-									{
-
-									}
 									<button
 										type='button'
 										onClick={() => handleAddMember(user)}

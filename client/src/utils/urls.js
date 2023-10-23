@@ -16,8 +16,8 @@ export const CREATE_ROOM_URL = ROOM_URL + "/create";
 export const ASSOCIATED_ROOMS = ROOM_URL + "/associated"
 
 // User
-export const PROFILE_URL = "/profile"
-export const USER_URL = BASE_URL + "/user";
+export const USER_URL = "/user";
+export const PROFILE_URL = USER_URL + "/profile"
 export const GET_ALL_USERS_URL = USER_URL + "/list";
 export const GET_USER_DETAILS_URL = USER_URL + "/get";
 export const UPDATE_USER_INFO_URL = USER_URL + "/update";

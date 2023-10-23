@@ -1,15 +1,19 @@
 const express = require('express');
 const bodyParser = require("body-parser");
-const databse = require('./database');
+const database = require("./database");
 const http = require('http');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
-const authorizeLoggedInUser = require('./authorizeLoggedInUser');
-const User = require('./models/user.model');
-const Room = require('./models/room.model');
-const Message = require('./models/message.model');
+
+// Models
+const User = require("./models/user.model");
+const Room = require("./models/room.model");
+const Message = require("./models/message.model");
+
+// Routes
+const auth_routes = require("./routes/auth.route");
+const user_routes = require("./routes/user.route");
+const room_routes = require("./routes/room.route");
 
 require('dotenv').config();
 
@@ -19,11 +23,9 @@ app.use(cors());
 
 const server = http.createServer(app);
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 const PORT = process.env.PORT || 8000;
 
-const io = new Server(server, {
+const socket_io = new Server(server, {
 	cors: {
 		origin: 'http://localhost:3000',
 		methods: ['GET', 'POST'],
@@ -31,125 +33,77 @@ const io = new Server(server, {
 });
 
 // Listen for when the client connects via socket.io-client
-io.on('connection', (socket) => {
-	console.log(`User connected ${socket.id}`);
+socket_io.on('connection', (socket) => {
+	console.log(`⚡: ${socket.id} user just connected!`);
 
-	// We can write our socket event listeners in here...
+	socket.on('joinRoom', async (data) => {
+		console.log("JOIN ROOM");
+		console.log(data);
+		const { user_id, room_id } = data;
+
+		try {
+			const user = await User.findById(user_id);
+			const room = await Room.findById(room_id);
+
+			if (!user || !room) {
+				return socket.emit('error', 'User or room does not exist');
+			}
+
+			// Join the room
+			socket.join(room_id);
+
+			// Emit the room details to the user
+			socket.emit('joinRoomResponse', room);
+
+			// Emit to all users in the room that a new user has joined
+			socket.to(room_id).emit('userJoinedRoom', user);
+		} catch (error) {
+			console.log(error);
+			socket.emit('error', error.message);
+		}
+	});
+
+
+	socket.on('message', async (data) => {
+		console.log("MESSAGE");
+		console.log(data);
+		const { message, user_id, room_id } = data;
+
+		try {
+			const user = await User.findById(user_id);
+			const room = await Room.findById(room_id);
+
+			if (!user || !room) {
+				return socket.emit('error', 'User or room does not exist');
+			}
+
+			const newMessage = new Message({
+				text: message,
+				sender: user_id,
+				room: room_id,
+			});
+
+			await newMessage.save();
+
+			const populatedMessage = await newMessage.populate('sender', 'username');
+			// Emit the new message to the room
+			// socket.emit('messageResponse', newMessage);
+			socket.to(room_id).emit('messageResponse', populatedMessage);
+		} catch (error) {
+			console.log(error);
+			socket.emit('error', error.message);
+		}
+
+	});
+
+	socket.on('disconnect', () => {
+		console.log('🔥: A user disconnected');
+	});
 });
 
 app.get('/', (req, res) => res.send('Hello world'));
-
-// User Signup
-app.post('/api/auth/signup', async (req, res) => {
-	const { username, password } = req.body;
-
-	try {
-		const existingUser = await User.findOne({ username });
-		if (existingUser) {
-			return res.status(404).json({ error: 'User already exists' });
-		}
-
-		const hashedPassword = await bcrypt.hash(password, 10);
-		const user = new User({
-			_id: new databse.Types.ObjectId(),
-			username,
-			password: hashedPassword,
-		});
-
-		await user.save();
-		res.json({ message: 'User registered successfully' });
-	} catch (error) {
-		console.log(error);
-		res.status(500).json({ error: 'Error registering user' });
-	}
-});
-
-// User Login
-app.post('/api/auth/login', async (req, res) => {
-	const { username, password } = req.body;
-
-	try {
-		const user = await User.findOne({ username });
-		if (!user) {
-			return res.status(404).json({ error: 'User not found' });
-		}
-
-		const isPasswordValid = await bcrypt.compare(password, user.password);
-		if (!isPasswordValid) {
-			return res.status(401).json({ error: 'Invalid password' });
-		}
-
-		const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-		res.json({ token });
-	} catch (error) {
-		res.status(500).json({ error: 'Error during login' });
-	}
-});
-
-// Get All Users
-app.get('/api/users', authorizeLoggedInUser, async (req, res) => {
-	try {
-		const users = await User.find().select('-password');
-		res.json({ users });
-	} catch (error) {
-		res.status(500).json({ error: 'Error getting users' });
-	}
-});
-
-// User Profile
-app.get('/api/profile', authorizeLoggedInUser, async (req, res) => {
-	const { userId } = req.userId;
-	const user = await User.findById(userId).select('-password');
-	res.json({ user });
-});
-
-// Endpoint to create a new room
-app.post('/api/room/create', authorizeLoggedInUser, async (req, res) => {
-	const { userId } = req.userId;
-	const { roomName } = req.body;
-
-	if (!roomName) {
-		return res.status(400).json({ error: 'Room name is required' });
-	}
-
-	// Create a new room in the database
-	const room = new Room({
-		name: roomName,
-		owner: userId, // Assuming you have the user ID stored in a variable called userId
-		members: [userId], // Add the owner to the list of members
-	});
-
-	await room.save();
-
-	res.json({ message: 'Room created successfully' });
-});
-
-// Endpoint to get rooms associated with a user
-app.get('/api/room/associated/:userId', authorizeLoggedInUser, async (req, res) => {
-	const userId = req.params.userId;
-
-	try {
-		// Find all rooms where the user is a member
-		const rooms = await Room.find({ members: userId }).populate('owner', 'username').populate('members', 'username');
-
-		res.json({ rooms });
-	} catch (error) {
-		res.status(500).json({ error: 'Error getting user rooms' });
-	}
-});
-
-// Endpoint to get all messages for a room
-app.get('/api/room/messages/:roomId', authorizeLoggedInUser, async (req, res) => {
-	const roomId = req.params.roomId;
-
-	try {
-		// Find all messages for the specified room (assuming you have a Message model)
-		const messages = await Message.find({ room: roomId }); // Adjust the Message model and field as needed.
-
-		res.json({ messages });
-	} catch (error) {
-		res.status(500).json({ error: 'Error getting room messages' });
-	}
-});
+app.use("/api/auth", auth_routes);
+app.use("/api/user", user_routes);
+app.use("/api/room", room_routes);
 
 server.listen(PORT, () => `Server is running on port ${PORT}`);
