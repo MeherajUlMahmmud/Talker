@@ -87,7 +87,6 @@ socket_io.on('connection', (socket) => {
 
 			const populatedMessage = await newMessage.populate('sender', 'username');
 			// Emit the new message to the room
-			// socket.emit('messageResponse', newMessage);
 			socket.to(room_id).emit('messageResponse', populatedMessage);
 		} catch (error) {
 			console.log(error);
