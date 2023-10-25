@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import socketIO from 'socket.io-client';
 import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
-import { sendGetRequest, sendPostRequest } from '../../apis/api';
-import { ASSOCIATED_ROOMS, CREATE_ROOM_URL, PROFILE_URL } from '../../utils/urls';
-import { formatDateTime } from '../../utils/helper';
+import { sendGetRequest } from '../../apis/api';
+import { ASSOCIATED_ROOMS, PROFILE_URL } from '../../utils/urls';
+import { calculateTimeAgo, formatDateTime } from '../../utils/helper';
 import Navbar from '../../components/Navbar';
+import CreateRoomModal from '../../components/CreateRoomModal';
+import AddMemberModal from '../../components/AddMemberModal';
 
 function HomePage() {
 	const token = loadStorage('token');
@@ -76,6 +78,7 @@ function HomePage() {
 				console.log(res?.data);
 				setRooms(res?.data?.rooms)
 				setActiveRoom(res?.data?.rooms[0])
+				setIsLoading(false)
 			})
 			.catch((err) => {
 				console.log(err);
@@ -127,30 +130,36 @@ function HomePage() {
 				<div className="flex flex-row justify-between bg-white">
 					<div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
 						<div className='flex flex-col justify-center'>
-							{rooms.map((room) => {
-								return (
-									<div
-										className={`flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer ${activeRoom?._id === room?._id ? 'bg-gray-200' : ''}`}
-										key={room?._id}
-										onClick={() => {
-											setActiveRoom(room);
-										}}
-									>
-										<div className="w-1/4">
-											<img
-												src="https://via.placeholder.com/150"
-												className="object-cover h-12 w-12 rounded-full"
-												alt=""
-											/>
-										</div>
-										<div className="w-full">
-											<div className="text-lg font-semibold">
-												{room?.name}
+							{
+								isLoading ? (
+									<div>
+										Loading...
+									</div>
+								) : (rooms.map((room) => {
+									return (
+										<div
+											className={`flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer ${activeRoom?._id === room?._id ? 'bg-gray-200' : ''}`}
+											key={room?._id}
+											onClick={() => {
+												setActiveRoom(room);
+											}}
+										>
+											<div className="w-1/4">
+												<img
+													src="https://via.placeholder.com/150"
+													className="object-cover h-12 w-12 rounded-full"
+													alt=""
+												/>
+											</div>
+											<div className="w-full">
+												<div className="text-lg font-semibold">
+													{room?.name}
+												</div>
 											</div>
 										</div>
-									</div>
-								)
-							})}
+									)
+								}))
+							}
 							<div>
 								<button
 									type='button'
@@ -184,7 +193,7 @@ function HomePage() {
 																		{message?.text}
 																	</div>
 																	<small>
-																		{formatDateTime(message?.timestamp)}
+																		{calculateTimeAgo(message?.timestamp)}
 																	</small>
 																</div>
 																{/* <p
@@ -209,7 +218,7 @@ function HomePage() {
 																		{message?.text}
 																	</div>
 																	<small>
-																		{formatDateTime(message?.timestamp)}
+																		{calculateTimeAgo(message?.timestamp)}
 																	</small>
 																</div>
 															</div>
@@ -302,159 +311,6 @@ function HomePage() {
 				/>
 			}
 		</>
-	)
-}
-
-const CreateRoomModal = ({ token, setShowCreateRoomModal }) => {
-	const [name, setName] = useState('')
-
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
-
-	const handleCreateRoom = (e) => {
-		e.preventDefault();
-
-		setIsLoading(true);
-		setError("");
-
-		sendPostRequest(CREATE_ROOM_URL, { roomName: name }, token)
-			.then((res) => {
-				console.log(res?.data);
-				setIsLoading(false);
-				setShowCreateRoomModal(false);
-			})
-			.catch((err) => {
-				console.log(err);
-				setError(err?.response?.data?.message || "Something went wrong");
-				setIsLoading(false);
-			});
-	}
-
-	return (
-		<div className='fixed top-0 left-0 h-screen w-screen bg-black bg-opacity-50 flex justify-center items-center'>
-			<div className='bg-white p-5 rounded-md w-full md:w-1/2 lg:w-1/3'>
-				<div className='flex flex-row justify-between items-center'>
-					<h3 className='font-semibold'>Create Room</h3>
-					<button
-						type='button'
-						onClick={() => setShowCreateRoomModal(false)}
-						className='bg-red-500 text-white px-3 py-1 rounded-md'>Close</button>
-				</div>
-				<form onSubmit={handleCreateRoom}>
-					<div className='flex flex-col'>
-						<div className='py-2'>
-							<label htmlFor='name'>Name</label>
-							<input
-								type='text'
-								name='name'
-								id='name'
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								className='py-2 px-3 rounded-md border-2 border-gray-300'
-							/>
-						</div>
-						<div className='py-2'>
-							<button
-								type='submit'
-								className='bg-blue-500 text-white px-3 py-1 rounded-md'
-							>
-								{isLoading ? 'Creating...' : 'Create'}
-							</button>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-	)
-}
-
-const AddMemberModal = ({ token, room, members, setShowAddMemberModal }) => {
-	const [allUsers, setAllUsers] = useState([])
-	const [isLoading, setIsLoading] = useState(true);
-
-	useEffect(() => {
-		fetchAllUsers()
-	}, [])
-
-	const fetchAllUsers = () => {
-		sendGetRequest('/user/list', token)
-			.then((res) => {
-				console.log(res?.data);
-				setAllUsers(res?.data?.users)
-
-				filterUsers(res?.data?.users)
-				setIsLoading(false);
-			})
-			.catch((err) => {
-				console.log(err);
-			});
-	};
-
-	const filterUsers = (users) => {
-		let filteredUsers = users.filter((user) => {
-			let isMember = false;
-			members.forEach((member) => {
-				if (member?._id === user?._id) {
-					isMember = true;
-				}
-			})
-			return !isMember;
-		})
-
-		setAllUsers(filteredUsers)
-	};
-
-	const handleAddMember = (member) => {
-		sendPostRequest('/room/add-member', { roomId: room?._id, userId: member?._id }, token)
-			.then((res) => {
-				console.log(res?.data);
-				setShowAddMemberModal(false);
-			})
-			.catch((err) => {
-				console.log(err);
-				setShowAddMemberModal(false);
-			});
-	};
-
-	return (
-		<div className='fixed top-0 left-0 h-screen w-screen bg-black bg-opacity-50 flex justify-center items-center'>
-			<div className='bg-white p-5 rounded-md w-full md:w-1/2 lg:w-1/3'>
-				<div className='flex flex-row justify-between items-center'>
-					<h3 className='font-semibold'>Add Member</h3>
-					<button
-						type='button'
-						onClick={() => setShowAddMemberModal(false)}
-						className='bg-red-500 text-white px-3 py-1 rounded-md'>Close</button>
-				</div>
-				<div className='flex flex-col'>
-					{
-						!isLoading && allUsers.map((user) => {
-							return (
-								<div
-									key={user?._id}
-									className='flex flex-row justify-between items-center py-2'
-								>
-									<div className='flex flex-row items-center'>
-										<img
-											src="https://via.placeholder.com/150"
-											className="object-cover h-12 w-12 rounded-full"
-											alt=""
-										/>
-										<div className='ml-2'>
-											<div className='font-semibold'>{user?.username}</div>
-										</div>
-									</div>
-									<button
-										type='button'
-										onClick={() => handleAddMember(user)}
-										className='bg-blue-500 text-white px-3 py-1 rounded-md'>Add</button>
-								</div>
-							)
-						})
-					}
-				</div>
-			</div>
-		</div>
 	)
 }
 
