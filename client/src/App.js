@@ -4,7 +4,6 @@ import ProfilePage from "./pages/main/ProfilePage";
 import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
 
-
 function App() {
   return (
     <div>
