@@ -1,14 +1,7 @@
 import { delStorage } from "./persistLocalStorage";
 
-export const isAuthenticated = (user) => {
-	if (user && user.id) {
-		return true;
-	}
-	return false;
-};
-
 export const isAuthorized = (error) => {
-	if (error.response.status === 401) {
+	if (error?.response?.status === 401) {
 		return false;
 	}
 	return true;
