@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import socketIO from 'socket.io-client';
 import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
@@ -16,7 +16,7 @@ function HomePage() {
 
 	const [user, setUser] = useState(loadStorage('user'));
 	const [rooms, setRooms] = useState([])
-	const [activeRoom, setActiveRoom] = useState(null)
+	const [activeRoom, setActiveRoom] = useState({})
 	const [activeRoomMembers, setActiveRoomMembers] = useState([])
 
 	const [messages, setMessages] = useState([]);
@@ -29,6 +29,8 @@ function HomePage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 
+	const div = useRef(null);
+
 	useEffect(() => {
 		if (token) {
 			if (!user) {
@@ -39,6 +41,7 @@ function HomePage() {
 			navigate('/login')
 		}
 	}, [token])
+
 
 	useEffect(() => {
 		if (activeRoom) {
@@ -174,8 +177,17 @@ function HomePage() {
 					<div className="w-full px-5 flex flex-col justify-between">
 						{
 							activeRoom && (
-								<>
-									<div className="flex flex-col mt-5">
+								<div className='flex flex-col h-full' style={{
+									height: 'calc(100vh - 4rem)',
+									overflowY: 'auto',
+									position: 'relative',
+								}}>
+									<div className="flex flex-col mt-5"
+										style={{
+											height: 'calc(100vh - 4rem - 6rem)',
+											overflowY: 'auto',
+										}}
+									>
 										{
 											isLoadingMessages ? (
 												<div className='flex justify-center items-center '>
@@ -228,7 +240,10 @@ function HomePage() {
 											)
 										}
 									</div>
-									<div className="py-5 flex ">
+									<div className="py-2 flex w-full bg-white" style={{
+										position: 'absolute',
+										bottom: 0,
+									}}>
 										<input
 											className="w-full bg-gray-300 py-5 px-3 rounded-xl outline-none"
 											type="text"
@@ -244,7 +259,7 @@ function HomePage() {
 											Send
 										</button>
 									</div>
-								</>
+								</div>
 							)
 						}
 					</div>

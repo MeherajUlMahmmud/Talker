@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { sendPostRequest } from '../apis/api';
+import { sendGetRequest, sendPostRequest } from '../apis/api';
 
 function CreateRoomModal({ token, room, members, setShowAddMemberModal }) {
 

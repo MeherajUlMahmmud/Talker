@@ -5,6 +5,8 @@ const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
+require('dotenv').config();
+
 // Models
 const User = require("./models/user.model");
 const Room = require("./models/room.model");
@@ -15,7 +17,6 @@ const auth_routes = require("./routes/auth.route");
 const user_routes = require("./routes/user.route");
 const room_routes = require("./routes/room.route");
 
-require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
