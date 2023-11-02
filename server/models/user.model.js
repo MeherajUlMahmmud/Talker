@@ -8,6 +8,9 @@ const userSchema = schema({
 		required: true,
 		unique: true,
 	},
+	name: {
+		type: String,
+	},
 	password: {
 		type: String,
 		required: true,

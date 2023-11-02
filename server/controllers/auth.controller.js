@@ -8,7 +8,7 @@ require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.signup = async function (req, res) {
-	const { username, password } = req.body;
+	const { username, name, password } = req.body;
 
 	try {
 		const existingUser = await User.findOne({ username });
@@ -20,6 +20,7 @@ exports.signup = async function (req, res) {
 		const user = new User({
 			_id: new database.Types.ObjectId(),
 			username,
+			name,
 			password: hashedPassword,
 		});
 

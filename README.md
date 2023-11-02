@@ -79,4 +79,8 @@ npm start
 
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+| Login Page                               | Sign Up Page                                           |
+| ---------------------------------------- | ------------------------------------------------------ |
+| ![Login Page](screenshots/LoginPage.png) | ![Sign Up Page Screenshot](screenshots/SignUpPage.png) |
+| Home Page                                | Profile Page                                           |
+| ![Home Page](screenshots/HomePage.png)   | ![Profile Page](screenshots/ProfilePage.png)           |
