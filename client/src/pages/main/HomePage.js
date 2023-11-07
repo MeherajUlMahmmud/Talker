@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import socketIO from 'socket.io-client';
+import io, { Socket } from 'socket.io-client';
 import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
 import { sendGetRequest } from '../../apis/api';
 import { ASSOCIATED_ROOMS, PROFILE_URL } from '../../utils/urls';
@@ -10,9 +10,16 @@ import CreateRoomModal from '../../components/CreateRoomModal';
 import AddMemberModal from '../../components/AddMemberModal';
 
 function HomePage() {
+	const socketRef = useRef();
+
 	const token = loadStorage('token');
 	const navigate = useNavigate();
-	const socket = socketIO.connect('http://localhost:8000');
+
+	const messagesEndRef = useRef(null)
+
+	const scrollToBottom = () => {
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+	}
 
 	const [user, setUser] = useState(loadStorage('user'));
 	const [rooms, setRooms] = useState([])
@@ -32,6 +39,20 @@ function HomePage() {
 	const div = useRef(null);
 
 	useEffect(() => {
+		socketRef.current = io('http://localhost:8001');
+
+		return () => {
+			if (socketRef.current) {
+				socketRef.current.disconnect();
+			}
+		}
+	}, [activeRoom])
+
+	useEffect(() => {
+		scrollToBottom()
+	}, [messages])
+
+	useEffect(() => {
 		if (token) {
 			if (!user) {
 				fetchUser();
@@ -44,9 +65,9 @@ function HomePage() {
 
 
 	useEffect(() => {
-		if (activeRoom) {
+		if (socketRef.current && activeRoom?._id) {
 			setIsLoadingMessages(true);
-			socket.emit('joinRoom', { room_id: activeRoom?._id });
+			socketRef.current.emit('joinRoom', { room_id: activeRoom?._id });
 			fetchRoomMessages()
 			fetchRoomMembers()
 			setIsLoadingMessages(false);
@@ -54,12 +75,20 @@ function HomePage() {
 	}, [activeRoom])
 
 	useEffect(() => {
-		socket.on('messageResponse', (data) => setMessages([...messages, data]));
+		if (socketRef.current) {
+			socketRef.current.on('messageResponse', (data) => {
+				console.log(data);
+				// setMessages([...messages, data]);
+				console.log(messages);
+				setMessages((prevMessages) => [...prevMessages, data])
+			});
 
-		socket.on('error', (data) => {
-			console.log(data);
-		});
-	}, [socket]);
+
+			socketRef.current.on('error', (data) => {
+				console.log(data);
+			});
+		}
+	}, [activeRoom]);
 
 	const fetchUser = (e) => {
 		sendGetRequest(PROFILE_URL, token)
@@ -118,9 +147,10 @@ function HomePage() {
 
 	const handleSendMessage = (e) => {
 		e.preventDefault();
-		socket.emit('message', {
+		socketRef.current.emit('message', {
 			message: message,
 			user_id: user?._id,
+			username: user?.username,
 			room_id: activeRoom?._id,
 		});
 		setMessage('');
@@ -148,11 +178,7 @@ function HomePage() {
 											}}
 										>
 											<div className="w-1/4">
-												<img
-													src="https://via.placeholder.com/150"
-													className="object-cover h-12 w-12 rounded-full"
-													alt=""
-												/>
+												<img src={`https://via.placeholder.com/468x300?text=${room?.name[0].toUpperCase()}`} className="object-cover h-12 w-12 rounded-full" alt="" />
 											</div>
 											<div className="w-full">
 												<div className="text-lg font-semibold">
@@ -198,15 +224,18 @@ function HomePage() {
 													return (
 														message?.sender?._id === user?._id ? (
 															<div className="flex justify-end mb-4">
-																<div className='flex flex-col'>
-																	<div
-																		className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-																	>
-																		{message?.text}
+																<div className='flex'>
+																	<div className='flex flex-col'>
+																		<div
+																			className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+																		>
+																			{message?.text}
+																		</div>
+																		<small>
+																			{calculateTimeAgo(message?.timestamp)}
+																		</small>
 																	</div>
-																	<small>
-																		{calculateTimeAgo(message?.timestamp)}
-																	</small>
+																	<img src={`https://via.placeholder.com/468x300?text=${message?.sender?.username[0].toUpperCase()}`} className="object-cover h-12 w-12 rounded-full" alt="" />
 																</div>
 																{/* <p
 																	className="h-8 w-8 rounded-full"
@@ -217,21 +246,18 @@ function HomePage() {
 															</div>
 														) : (
 															<div className="flex justify-start mb-4">
-																{/* <p
-																	className="h-8 w-8 rounded-full"
-																	alt=""
-																>
-																	{message?.sender?.username[0]?.toUpperCase()}
-																</p> */}
-																<div className='flex flex-col'>
-																	<div
-																		className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
-																	>
-																		{message?.text}
+																<div className='flex'>
+																	<img src={`https://via.placeholder.com/468x300?text=${message?.sender?.username[0].toUpperCase()}`} className="object-cover h-12 w-12 rounded-full" alt="" />
+																	<div className='flex flex-col'>
+																		<div
+																			className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
+																		>
+																			{message?.text}
+																		</div>
+																		<small>
+																			{calculateTimeAgo(message?.timestamp)}
+																		</small>
 																	</div>
-																	<small>
-																		{calculateTimeAgo(message?.timestamp)}
-																	</small>
 																</div>
 															</div>
 														)
@@ -240,6 +266,7 @@ function HomePage() {
 											)
 										}
 									</div>
+									<div ref={messagesEndRef} />
 									<div className="py-2 flex w-full bg-white" style={{
 										position: 'absolute',
 										bottom: 0,
@@ -288,11 +315,7 @@ function HomePage() {
 													return (
 														<div className="flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer">
 															<div className="w-1/4 mx-2">
-																<img
-																	src="https://via.placeholder.com/150"
-																	className="object-cover h-12 w-12 rounded-full"
-																	alt=""
-																/>
+																<img src={`https://via.placeholder.com/468x300?text=${member?.username[0].toUpperCase()}`} className="object-cover h-12 w-12 rounded-full" alt="" />
 															</div>
 															<div className="w-full">
 																<div className="text-lg font-semibold">

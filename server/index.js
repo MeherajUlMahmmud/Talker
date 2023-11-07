@@ -3,7 +3,8 @@ const bodyParser = require("body-parser");
 const database = require("./database");
 const http = require('http');
 const cors = require('cors');
-const { Server } = require('socket.io');
+// const { Server } = require('socket.io');
+const socketIO = require('socket.io');
 
 require('dotenv').config();
 
@@ -26,38 +27,68 @@ const server = http.createServer(app);
 
 const PORT = process.env.PORT || 8000;
 
-const socket_io = new Server(server, {
+// const socket_io = new Server(server, {
+// 	cors: {
+// 		origin: 'http://localhost:3000',
+// 		methods: ['GET', 'POST'],
+// 	},
+// });
+
+const io = socketIO(8001, {
 	cors: {
-		origin: 'http://localhost:3000',
-		methods: ['GET', 'POST'],
+		origin: '*',
+		// methods: ['GET', 'POST'],
 	},
 });
 
+// io.on("connection", (socket) => {
+// 	console.log("connected to socket");
+// 	socket.on("join", ({ chatRoomId }) => {
+// 		socket.join(chatRoomId);
+// 		console.log("joined room " + chatRoomId);
+// 	});
+
+// 	socket.on("sendMessage", async ({ sender, chatRoomId, message }) => {
+// 		console.log("message", sender + chatRoomId + message);
+// 		await createChatMessage(sender, chatRoomId, message);
+// 		io.to(chatRoomId).emit("message", { sender, message });
+// 	});
+
+// 	socket.on("disconnect", () => {
+// 		console.log("User disconnected from socket", socket.id);
+// 		const rooms = Object.keys(socket.rooms);
+// 		rooms.forEach((room) => {
+// 			socket.to(room).emit("userDisconnected", socket.id);
+// 		});
+// 	});
+// });
+
+
 // Listen for when the client connects via socket.io-client
-socket_io.on('connection', (socket) => {
+io.on('connection', (socket) => {
 	console.log(`⚡: ${socket.id} user just connected!`);
 
-	socket.on('joinRoom', async (data) => {
+	socket.on('joinRoom', (data) => {
 		console.log("JOIN ROOM");
 		console.log(data);
 		const { user_id, room_id } = data;
 
 		try {
-			const user = await User.findById(user_id);
-			const room = await Room.findById(room_id);
+			// const user = await User.findById(user_id);
+			// const room = await Room.findById(room_id);
 
-			if (!user || !room) {
-				return socket.emit('error', 'User or room does not exist');
-			}
+			// if (!user || !room) {
+			// 	return socket.emit('error', 'User or room does not exist');
+			// }
 
 			// Join the room
 			socket.join(room_id);
 
 			// Emit the room details to the user
-			socket.emit('joinRoomResponse', room);
+			// io.emit('joinRoomResponse', room);
 
 			// Emit to all users in the room that a new user has joined
-			socket.to(room_id).emit('userJoinedRoom', user);
+			// socket.to(room_id).emit('userJoinedRoom', user);
 		} catch (error) {
 			console.log(error);
 			socket.emit('error', error.message);
@@ -68,15 +99,15 @@ socket_io.on('connection', (socket) => {
 	socket.on('message', async (data) => {
 		console.log("MESSAGE");
 		console.log(data);
-		const { message, user_id, room_id } = data;
+		const { message, user_id, username, room_id } = data;
 
 		try {
-			const user = await User.findById(user_id);
-			const room = await Room.findById(room_id);
+			// const user = await User.findById(user_id);
+			// const room = await Room.findById(room_id);
 
-			if (!user || !room) {
-				return socket.emit('error', 'User or room does not exist');
-			}
+			// if (!user || !room) {
+			// 	return socket.emit('error', 'User or room does not exist');
+			// }
 
 			const newMessage = new Message({
 				text: message,
@@ -86,9 +117,18 @@ socket_io.on('connection', (socket) => {
 
 			await newMessage.save();
 
-			const populatedMessage = await newMessage.populate('sender', 'username');
+			// const populatedMessage = await newMessage.populate('sender', 'username');
 			// Emit the new message to the room
-			socket.to(room_id).emit('messageResponse', populatedMessage);
+			io.to(room_id).emit('messageResponse', {
+				_id: newMessage._id,
+				text: newMessage.text,
+				sender: {
+					_id: user_id,
+					username: username,
+				},
+				room: room_id,
+				createdAt: newMessage.createdAt,
+			});
 		} catch (error) {
 			console.log(error);
 			socket.emit('error', error.message);
@@ -97,7 +137,7 @@ socket_io.on('connection', (socket) => {
 	});
 
 	socket.on('disconnect', () => {
-		console.log('🔥: A user disconnected');
+		console.log(`🔥: ${socket.id} user disconnected`);
 	});
 });
 

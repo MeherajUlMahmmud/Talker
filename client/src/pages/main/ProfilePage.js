@@ -14,7 +14,10 @@ function ProfilePage() {
 			<div class="bg-gray-100 p-8">
 				<div class="max-w-md mx-auto bg-white shadow-md rounded-md p-6">
 					<div class="text-center">
-						<img src="user-avatar.jpg" alt="User Avatar" class="w-20 h-20 rounded-full mx-auto mb-4" />
+						{/* <img src="user-avatar.jpg" alt="User Avatar" class="w-20 h-20 rounded-full mx-auto mb-4" /> */}
+						<img
+							src={`https://via.placeholder.com/468x300?text=${user?.username[0].toUpperCase()}`}
+							className="object-cover h-40 w-40 rounded-full text-center mx-auto mb-4" />
 						<h2 class="text-xl font-semibold">
 							{user?.firstName} {user?.lastName}
 						</h2>
