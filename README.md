@@ -5,14 +5,29 @@ Yet Another Chat App
 ## Features
 
 -   [x] User Authentication
+-   [ ] User Management
+-   [ ] User Online Status
 -   [x] Room Creation
 -   [ ] Room Managemnt
 -   [x] Member Add/Remove
--   [ ] User Management
+-   [x] Group Chat
+-   [ ] Group Chat (Private - Encrypted Message and Messages will be deleted after all member read the message)
+-   [ ] One-to-One Chat
+-   [ ] One-to-One Chat (Private - Encrypted Message and Messages will be deleted after both user read the message)
+-   [ ] Message Seen Status
+-   [ ] Message Delivered Status
+-   [ ] File Sharing
+-   [ ] Audio Call
+-   [ ] Video Call
+-   [ ] Screen Sharing
 
 ## Tech Stack
 
-**Client:** React, TailwindCSS
+**Web Client:** React, TailwindCSS
+
+**Web Admin Client:** React, Bootstrap
+
+**Mobile Client:** Flutter
 
 **Server:** Node, Express
 
