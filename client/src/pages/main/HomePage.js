@@ -36,18 +36,6 @@ function HomePage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 
-	const div = useRef(null);
-
-	useEffect(() => {
-		socketRef.current = io('http://localhost:8001');
-
-		return () => {
-			if (socketRef.current) {
-				socketRef.current.disconnect();
-			}
-		}
-	}, [activeRoom])
-
 	useEffect(() => {
 		scrollToBottom()
 	}, [messages])
@@ -57,12 +45,19 @@ function HomePage() {
 			if (!user) {
 				fetchUser();
 			}
+			socketRef.current = io('http://localhost:8001');
+
 			fetchAssociatedRooms()
 		} else {
 			navigate('/login')
 		}
-	}, [token])
 
+		return () => {
+			if (socketRef.current) {
+				socketRef.current.disconnect();
+			}
+		}
+	}, [token])
 
 	useEffect(() => {
 		if (socketRef.current && activeRoom?._id) {
@@ -71,18 +66,15 @@ function HomePage() {
 			fetchRoomMessages()
 			fetchRoomMembers()
 			setIsLoadingMessages(false);
+			scrollToBottom()
 		}
 	}, [activeRoom])
 
 	useEffect(() => {
 		if (socketRef.current) {
 			socketRef.current.on('messageResponse', (data) => {
-				console.log(data);
-				// setMessages([...messages, data]);
-				console.log(messages);
 				setMessages((prevMessages) => [...prevMessages, data])
 			});
-
 
 			socketRef.current.on('error', (data) => {
 				console.log(data);

@@ -8,7 +8,7 @@ exports.create_room = async function (req, res) {
 
 	try {
 		if (!roomName) {
-			return res.status(400).json({ error: 'Room name is required' });
+			return res.status(400).json({ message: 'Room name is required' });
 		}
 
 		// Create a new room in the database
