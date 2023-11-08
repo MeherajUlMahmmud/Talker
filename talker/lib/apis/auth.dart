@@ -1,10 +1,11 @@
 import 'dart:convert';
 
-import 'package:jobboard/utils/urls.dart';
+import 'package:talker/utils/urls.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  Future<Map<String, dynamic>> signUpUser( Map<String, dynamic> inputData) async {
+  Future<Map<String, dynamic>> signUpUser(
+      Map<String, dynamic> inputData) async {
     try {
       final response = await http.post(
         Uri.parse(URLS.kRegisterUrl),
@@ -36,7 +37,7 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> loginUser( Map<String, dynamic> inputData) async {
+  Future<Map<String, dynamic>> loginUser(Map<String, dynamic> inputData) async {
     try {
       final response = await http.post(
         Uri.parse(URLS.kLoginUrl),

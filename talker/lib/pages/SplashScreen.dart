@@ -1,6 +1,5 @@
-import 'package:talker/screens/auth_screens/LoginScreen.dart';
-import 'package:talker/screens/home_screen.dart';
-import 'package:talker/screens/main_screens/MainScreen.dart';
+import 'package:talker/pages/HomeScreen.dart';
+import 'package:talker/pages/LoginScreen.dart';
 import 'package:talker/utils/local_storage.dart';
 import 'package:flutter/material.dart';
 
@@ -23,10 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       });
     } else {
-      Provider.of<UserProvider>(context, listen: false).setUser(user);
-      Provider.of<UserProvider>(context, listen: false).setTokens(tokens);
       Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pushReplacementNamed(context, MainScreen.routeName);
+        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
       });
     }
   }

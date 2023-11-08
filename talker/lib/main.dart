@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:talker/pages/HomeScreen.dart';
+import 'package:talker/pages/LoginScreen.dart';
+import 'package:talker/pages/ProfileScreen.dart';
+import 'package:talker/pages/SignUpScreen.dart';
+import 'package:talker/pages/SplashScreen.dart';
 
 void main() {
   runApp(const MyApp());
