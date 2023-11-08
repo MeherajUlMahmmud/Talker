@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import io, { Socket } from 'socket.io-client';
 import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
@@ -8,6 +8,7 @@ import { calculateTimeAgo, formatDateTime } from '../../utils/helper';
 import CreateRoomModal from '../../components/CreateRoomModal';
 import AddMemberModal from '../../components/AddMemberModal';
 import Navbar from '../../components/navbar/Navbar';
+import RoomContext from '../../contexts/RoomContext';
 
 function HomePage() {
 	const socketRef = useRef();
@@ -15,6 +16,8 @@ function HomePage() {
 
 	const token = loadStorage('token');
 	const navigate = useNavigate();
+
+	const roomContext = useContext(RoomContext);
 
 	const [user, setUser] = useState(loadStorage('user'));
 	const [rooms, setRooms] = useState([])
@@ -192,47 +195,10 @@ function HomePage() {
 
 	return (
 		<>
-			<div className="container mx-auto shadow-lg rounded-lg">
-				<Navbar user={user} />
+			<div className="">
+				<Navbar />
 				<div className="flex flex-row justify-between bg-white">
 					<div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
-						<div className='flex flex-col justify-center'>
-							{
-								isLoading ? (
-									<div>
-										Loading...
-									</div>
-								) : (rooms.map((room) => {
-									return (
-										<div
-											className={`flex flex-row py-4 px-2 justify-center items-center border-b-2 border-gray-200 cursor-pointer ${activeRoom?._id === room?._id ? 'bg-gray-200' : ''}`}
-											key={room?._id}
-											onClick={() => {
-												setActiveRoom(room);
-											}}
-										>
-											<div className="w-1/4">
-												<img src={`https://via.placeholder.com/468x300?text=${room?.name[0].toUpperCase()}`} className="object-cover h-12 w-12 rounded-full" alt="" />
-											</div>
-											<div className="w-full">
-												<div className="text-lg font-semibold">
-													{room?.name}
-												</div>
-											</div>
-										</div>
-									)
-								}))
-							}
-							<div>
-								<button
-									type='button'
-									onClick={() => setShowCreateRoomModal(true)}
-									className='bg-blue-500 text-white px-3 py-1 rounded-md mt-5'
-								>
-									Create Room
-								</button>
-							</div>
-						</div>
 					</div>
 					<div className="w-full px-5 flex flex-col justify-between">
 						{

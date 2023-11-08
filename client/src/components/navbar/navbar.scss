@@ -1,4 +1,21 @@
 .navbar_wrapper {
-	height: 65px;
+	height: 55px;
+	display: flex;
 	background-color: #303338;
+
+	.header_wrapper {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 300px;
+		height: 100%;
+		padding: 0 20px;
+		border-right: 1px solid #3c3f44;
+
+		.title {
+			font-size: 20px;
+			font-weight: 600;
+			color: #fff;
+		}
+	}
 }

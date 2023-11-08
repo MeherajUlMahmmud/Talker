@@ -22,3 +22,9 @@ code {
 	font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
 		monospace;
 }
+
+.chat_page_wrapper {
+	display: flex;
+	height: 100vh;
+	width: calc(100vw - 70px);
+}

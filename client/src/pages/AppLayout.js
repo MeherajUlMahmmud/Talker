@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { loadStorage } from '../utils/persistLocalStorage';
 import { sendGetRequest } from '../apis/api';
 import { ASSOCIATED_ROOMS } from '../utils/urls';
+import RoomContext from '../contexts/RoomContext';
 
 function AppLayout() {
 	const navigate = useNavigate();
@@ -11,6 +12,7 @@ function AppLayout() {
 	const user = loadStorage('user');
 
 	const [rooms, setRooms] = useState([])
+	const [activeRoom, setActiveRoom] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 
@@ -52,11 +54,11 @@ function AppLayout() {
 	}
 
 	return (
-		<div>
+		<RoomContext.Provider value={{ rooms, setRooms, activeRoom, setActiveRoom }}>
 			<Outlet
-				context={[rooms]}
+			// context={[rooms]}
 			/>
-		</div>
+		</RoomContext.Provider>
 	)
 }
 

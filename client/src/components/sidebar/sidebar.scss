@@ -1,7 +1,7 @@
 .sidebar_wrapper {
 	background-color: #1e1f22;
 	height: 100vh;
-	width: 80px;
+	width: 70px;
 	position: fixed;
 	display: flex;
 	flex-direction: column;
@@ -43,6 +43,10 @@
 			transition: 0.2s;
 
 			&:hover {
+				background-color: #5764f2;
+			}
+
+			&.active {
 				background-color: #5764f2;
 			}
 		}
