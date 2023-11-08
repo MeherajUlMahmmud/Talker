@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talker/utils/helper.dart';
 
 class CustomTextFormField extends StatefulWidget {
   final double width;
@@ -44,32 +45,53 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
       width: widget.width,
-      child: TextFormField(
-        maxLines: widget.isObscure ?? false ? 1 : null,
-        autofocus: widget.autofocus ?? false,
-        textCapitalization: widget.textCapitalization,
-        controller: widget.controller,
-        decoration: InputDecoration(
-          prefixIcon: Icon(widget.prefixIcon),
-          suffixIcon: widget.suffixIcon != null
-              ? IconButton(
-                  onPressed: () {
-                    widget.suffixIconOnPressed!();
-                  },
-                  icon: Icon(widget.suffixIcon))
-              : const SizedBox.shrink(),
-          labelText: widget.labelText,
-          hintText: widget.hintText,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.labelText,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Helper().createMaterialColor(const Color(0xFFF2F3F5)),
+            ),
           ),
-        ),
-        keyboardType: widget.keyboardType,
-        obscureText: widget.isObscure ?? false,
-        onChanged: (value) {
-          widget.onChanged(value);
-        },
-        validator: widget.validator,
+          const SizedBox(height: 20),
+          TextFormField(
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: widget.isObscure ?? false ? 1 : null,
+            autofocus: widget.autofocus ?? false,
+            textCapitalization: widget.textCapitalization,
+            controller: widget.controller,
+            decoration: InputDecoration(
+              fillColor: Colors.white,
+              hintText: widget.hintText,
+              suffixIcon: widget.suffixIcon != null
+                  ? IconButton(
+                      onPressed: () {
+                        widget.suffixIconOnPressed!();
+                      },
+                      icon: Icon(widget.suffixIcon),
+                    )
+                  : const SizedBox.shrink(),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(widget.borderRadius),
+                borderSide: const BorderSide(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            keyboardType: widget.keyboardType,
+            obscureText: widget.isObscure ?? false,
+            onChanged: (value) {
+              widget.onChanged(value);
+            },
+            validator: widget.validator,
+          ),
+        ],
       ),
     );
   }

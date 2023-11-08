@@ -1,5 +1,5 @@
 import 'package:talker/pages/HomeScreen.dart';
-import 'package:talker/pages/LoginScreen.dart';
+import 'package:talker/pages/auth_screens/LoginScreen.dart';
 import 'package:talker/utils/local_storage.dart';
 import 'package:flutter/material.dart';
 
@@ -15,9 +15,9 @@ class _SplashScreenState extends State<SplashScreen> {
   LocalStorage localStorage = LocalStorage();
 
   void checkUser() async {
-    final Map<String, dynamic> tokens = await localStorage.readData('tokens');
+    final Map<String, dynamic> token = await localStorage.readData('token');
     final Map<String, dynamic> user = await localStorage.readData('user');
-    if (tokens['access'] == null || tokens['refresh'] == null) {
+    if (token['token'] == null || user['_id'] == null) {
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       });

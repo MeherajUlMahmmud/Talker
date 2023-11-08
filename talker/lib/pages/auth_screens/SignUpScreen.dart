@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:talker/apis/auth.dart';
-import 'package:talker/pages/HomeScreen.dart';
-import 'package:talker/pages/SignUpScreen.dart';
+import 'package:talker/pages/auth_screens/LoginScreen.dart';
 import 'package:talker/utils/helper.dart';
-import 'package:talker/utils/local_storage.dart';
 import 'package:talker/widgets/custom_button.dart';
 import 'package:talker/widgets/custom_text_form_field.dart';
 
-class LoginScreen extends StatefulWidget {
-  static const routeName = '/login';
-  const LoginScreen({Key? key}) : super(key: key);
+class SignUpScreen extends StatefulWidget {
+  static const routeName = '/signup';
+  const SignUpScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final LocalStorage localStorage = LocalStorage();
-
+class _SignUpScreenState extends State<SignUpScreen> {
+  TextEditingController nameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
   Map<String, dynamic> inputData = {
+    'name': '',
     'username': '',
     'password': '',
   };
@@ -33,44 +31,51 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    nameController.dispose();
     usernameController.dispose();
     passwordController.dispose();
 
     super.dispose();
   }
 
-  handleLogin() {
+  handleSignUp() {
     FocusScope.of(context).unfocus();
     setState(() {
       isLoading = true;
     });
 
-    AuthService().loginUser(inputData).then((data) async {
+    AuthService().signUpUser(inputData).then((data) async {
       print(data);
       if (data['status'] == 200) {
-        await localStorage.writeData('user', data['data']['user']);
-        await localStorage.writeData('tokens', data['data']['tokens']);
-
-        Helper().showSnackBar(context, 'Login Successful', Colors.green);
         setState(() {
           isLoading = false;
         });
-        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+
+        Helper().showSnackBar(
+          context,
+          'Registration Successful',
+          Colors.green,
+        );
+
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       } else {
         setState(() {
           isLoading = false;
         });
-        Helper().showSnackBar(context, data['error'], Colors.red);
+        Helper().showSnackBar(
+          context,
+          'Something went wrong',
+          Colors.red,
+        );
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Talker')),
       body: Container(
         padding: const EdgeInsets.all(10),
         child: Form(
@@ -88,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Welcome back',
+                  'Welcome',
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -96,23 +101,44 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Login to continue',
+                  'Create an account to continue!',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 CustomTextFormField(
                   width: width,
-                  autofocus: true,
+                  autofocus: false,
+                  controller: nameController,
+                  labelText: 'Name',
+                  hintText: 'Name',
+                  prefixIcon: Icons.person,
+                  textCapitalization: TextCapitalization.words,
+                  borderRadius: 10,
+                  keyboardType: TextInputType.name,
+                  onChanged: (value) {
+                    setState(() {
+                      inputData['name'] = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
+                ),
+                CustomTextFormField(
+                  width: width,
                   controller: usernameController,
                   labelText: 'Username',
                   hintText: 'Username',
-                  prefixIcon: Icons.person,
+                  prefixIcon: Icons.email,
                   textCapitalization: TextCapitalization.none,
                   borderRadius: 10,
-                  keyboardType: TextInputType.name,
+                  keyboardType: TextInputType.emailAddress,
                   onChanged: (value) {
                     setState(() {
                       inputData['username'] = value;
@@ -120,12 +146,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return 'Please enter your email';
+                      return 'Please enter your username';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 5),
                 CustomTextFormField(
                   width: width,
                   controller: passwordController,
@@ -155,28 +180,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 15),
                 CustomButton(
-                  text: 'Login',
+                  text: 'Sign Up',
                   isLoading: isLoading,
                   isDisabled: isLoading,
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      handleLogin();
+                      handleSignUp();
                     }
                   },
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account?"),
+                    const Text('Already have an account?'),
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacementNamed(
                           context,
-                          SignUpScreen.routeName,
+                          LoginScreen.routeName,
                         );
                       },
-                      child: const Text('Sign Up'),
+                      child: const Text('Login'),
                     ),
                   ],
                 ),
