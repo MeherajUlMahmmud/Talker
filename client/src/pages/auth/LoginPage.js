@@ -6,7 +6,6 @@ import { LOGIN_URL } from '../../utils/urls';
 import Navbar from '../../components/Navbar';
 
 function LoginPage() {
-	const token = loadStorage('token');
 	const navigate = useNavigate();
 
 	const [inputs, setInputs] = useState({
@@ -15,15 +14,6 @@ function LoginPage() {
 	});
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
-
-	useEffect(() => {
-		/*
-		 * If token is present, redirect to home page
-		*/
-		if (token) {
-			navigate("/");
-		}
-	}, [token]);
 
 	const handleChange = (e) => {
 		/*
@@ -83,7 +73,6 @@ function LoginPage() {
 									className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
 							</div>
 						</div>
-
 						<div>
 							<div className="flex items-center justify-between">
 								<label for="password" className="block text-sm font-medium leading-6 text-gray-900">Password</label>
@@ -99,6 +88,14 @@ function LoginPage() {
 									className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
 							</div>
 						</div>
+
+						{
+							error && (
+								<div className="text-red-500 text-sm font-medium">
+									{error}
+								</div>
+							)
+						}
 
 						<div>
 							<button

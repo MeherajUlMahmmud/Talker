@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loadStorage } from "../../utils/persistLocalStorage";
 import { sendAuthRequest } from "../../apis/api";
 import { SIGNUP_URL } from "../../utils/urls";
 import Navbar from "../../components/Navbar";
 
 const SignUpPage = () => {
-	const token = loadStorage('token');
 	const navigate = useNavigate();
 
 	const [inputs, setInputs] = useState({
@@ -17,15 +15,6 @@ const SignUpPage = () => {
 
 	const [error, setError] = useState(null);
 	const [isLoading, setIsLoading] = useState(false);
-
-	useEffect(() => {
-		/*
-		 * If token is present, redirect to home page
-		*/
-		if (token) {
-			navigate("/");
-		}
-	}, [token]);
 
 	const handleChange = (e) => {
 		/*
@@ -100,7 +89,6 @@ const SignUpPage = () => {
 									className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
 							</div>
 						</div>
-
 						<div>
 							<div className="flex items-center justify-between">
 								<label for="password" className="block text-sm font-medium leading-6 text-gray-900">Password</label>
@@ -115,6 +103,14 @@ const SignUpPage = () => {
 									className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
 							</div>
 						</div>
+
+						{
+							error && (
+								<div className="text-red-500 text-sm font-medium">
+									{error}
+								</div>
+							)
+						}
 
 						<div>
 							<button

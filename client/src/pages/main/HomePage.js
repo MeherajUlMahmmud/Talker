@@ -52,7 +52,7 @@ function HomePage() {
 
 			fetchAssociatedRooms()
 		} else {
-			navigate('/login')
+			navigate('/auth/login')
 		}
 
 		return () => {
