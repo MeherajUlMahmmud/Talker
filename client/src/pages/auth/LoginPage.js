@@ -17,18 +17,29 @@ function LoginPage() {
 	const [error, setError] = useState("");
 
 	useEffect(() => {
+		/*
+		 * If token is present, redirect to home page
+		*/
 		if (token) {
 			navigate("/");
 		}
 	}, [token]);
 
 	const handleChange = (e) => {
+		/*
+		 * Update input state with the current value
+		*/
 		setInputs({ ...inputs, [e.target.name]: e.target.value });
 	};
 
 	const handleSubmit = (e) => {
+		/*
+		 * Handle user login
+		 * Send a POST request to the server with the login credentials
+		 * If successful, save the token in local storage and redirect to home page
+		 * If unsuccessful, display the error message
+		*/
 		e.preventDefault();
-		console.log(inputs);
 
 		setError("");
 		setIsLoading(true);

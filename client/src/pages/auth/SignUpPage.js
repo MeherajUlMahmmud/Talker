@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loadStorage, saveStorage } from "../../utils/persistLocalStorage";
+import { loadStorage } from "../../utils/persistLocalStorage";
 import { sendAuthRequest } from "../../apis/api";
 import { SIGNUP_URL } from "../../utils/urls";
 import Navbar from "../../components/Navbar";
 
 const SignUpPage = () => {
-	const user = loadStorage("user");
+	const token = loadStorage('token');
 	const navigate = useNavigate();
 
 	const [inputs, setInputs] = useState({
@@ -19,16 +19,28 @@ const SignUpPage = () => {
 	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
-		if (user) {
-			navigate("/login");
+		/*
+		 * If token is present, redirect to home page
+		*/
+		if (token) {
+			navigate("/");
 		}
-	}, [user, navigate]);
+	}, [token]);
 
 	const handleChange = (e) => {
+		/*
+		 * Update input state with the current value
+		*/
 		setInputs({ ...inputs, [e.target.name]: e.target.value });
 	};
 
 	const handleSignUp = (e) => {
+		/*
+		 * Handle user login
+		 * Send a POST request to the server with the login credentials
+		 * If successful, redirect to login page
+		 * If unsuccessful, display the error message
+		*/
 		e.preventDefault();
 		console.log(inputs);
 
@@ -38,7 +50,6 @@ const SignUpPage = () => {
 		sendAuthRequest(SIGNUP_URL, inputs)
 			.then((res) => {
 				console.log(res);
-				saveStorage("user", res.data.data);
 				setIsLoading(false);
 				navigate("/login");
 			})
@@ -47,7 +58,6 @@ const SignUpPage = () => {
 				setError(err?.response?.data?.detail || "Something went wrong");
 				setIsLoading(false);
 			});
-
 	};
 
 	return (

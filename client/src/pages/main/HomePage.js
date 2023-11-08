@@ -11,15 +11,10 @@ import AddMemberModal from '../../components/AddMemberModal';
 
 function HomePage() {
 	const socketRef = useRef();
+	const messagesEndRef = useRef(null)
 
 	const token = loadStorage('token');
 	const navigate = useNavigate();
-
-	const messagesEndRef = useRef(null)
-
-	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-	}
 
 	const [user, setUser] = useState(loadStorage('user'));
 	const [rooms, setRooms] = useState([])
@@ -37,10 +32,18 @@ function HomePage() {
 	const [error, setError] = useState("");
 
 	useEffect(() => {
+		/*
+		 * this will scroll to the bottom of the chat window when a new message is received
+		*/
 		scrollToBottom()
 	}, [messages])
 
 	useEffect(() => {
+		/*
+		 * If token is not present, redirect to login page
+		 * If token is present, fetch user details and connect to socket
+		 * If socket is connected, fetch associated rooms
+		*/
 		if (token) {
 			if (!user) {
 				fetchUser();
@@ -60,6 +63,9 @@ function HomePage() {
 	}, [token])
 
 	useEffect(() => {
+		/*
+		 * If active room is present, join the room and fetch messages, members, and scroll to bottom
+		*/
 		if (socketRef.current && activeRoom?._id) {
 			setIsLoadingMessages(true);
 			socketRef.current.emit('joinRoom', { room_id: activeRoom?._id });
@@ -71,6 +77,9 @@ function HomePage() {
 	}, [activeRoom])
 
 	useEffect(() => {
+		/*
+		 * If socket is connected, listen for new messages and errors
+		*/
 		if (socketRef.current) {
 			socketRef.current.on('messageResponse', (data) => {
 				setMessages((prevMessages) => [...prevMessages, data])
@@ -83,6 +92,11 @@ function HomePage() {
 	}, [activeRoom]);
 
 	const fetchUser = (e) => {
+		/*
+		 * Fetch user details
+		 * If successful, save user details in local storage
+		 * If unsuccessful, display the error message
+		*/
 		sendGetRequest(PROFILE_URL, token)
 			.then((res) => {
 				console.log(res?.data);
@@ -97,6 +111,12 @@ function HomePage() {
 	}
 
 	const fetchAssociatedRooms = () => {
+		/*
+		 * Fetch associated rooms
+		 * If successful, set rooms and active room
+		 * If unsuccessful, display the error message
+		 * Set loading to false
+		*/
 		sendGetRequest(ASSOCIATED_ROOMS + '/' + user?._id, token)
 			.then((res) => {
 				console.log(res?.data);
@@ -111,7 +131,19 @@ function HomePage() {
 			});
 	}
 
+	const scrollToBottom = () => {
+		/*
+		 * Scroll to bottom of the chat window
+		*/
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+	}
+
 	const fetchRoomMessages = () => {
+		/*
+		 * Fetch room messages
+		 * If successful, set messages
+		 * If unsuccessful, display the error message
+		*/
 		sendGetRequest('/room/messages/' + activeRoom?._id, token)
 			.then((res) => {
 				console.log(res?.data);
@@ -125,6 +157,11 @@ function HomePage() {
 	}
 
 	const fetchRoomMembers = () => {
+		/*
+		 * Fetch room members
+		 * If successful, set members
+		 * If unsuccessful, display the error message
+		*/
 		sendGetRequest('/room/members/' + activeRoom?._id, token)
 			.then((res) => {
 				console.log(res?.data);
@@ -138,6 +175,11 @@ function HomePage() {
 	}
 
 	const handleSendMessage = (e) => {
+		/*
+		 * Send message to the server
+		 * If successful, set message to empty string
+		 * If unsuccessful, display the error message
+		*/
 		e.preventDefault();
 		socketRef.current.emit('message', {
 			message: message,
