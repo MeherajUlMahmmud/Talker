@@ -47,7 +47,12 @@ exports.login = async function (req, res) {
 		}
 
 		const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-		res.json({ token });
+		const userToSend = {
+			_id: user._id,
+			username: user.username,
+			name: user.name,
+		};
+		res.json({ token, user: userToSend });
 	} catch (error) {
 		res.status(500).json({
 			error: error.message || 'Something went wrong',

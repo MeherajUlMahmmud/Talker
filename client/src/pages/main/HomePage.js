@@ -5,9 +5,9 @@ import { loadStorage, saveStorage } from '../../utils/persistLocalStorage'
 import { sendGetRequest } from '../../apis/api';
 import { ASSOCIATED_ROOMS, PROFILE_URL } from '../../utils/urls';
 import { calculateTimeAgo, formatDateTime } from '../../utils/helper';
-import Navbar from '../../components/Navbar';
 import CreateRoomModal from '../../components/CreateRoomModal';
 import AddMemberModal from '../../components/AddMemberModal';
+import Navbar from '../../components/navbar/Navbar';
 
 function HomePage() {
 	const socketRef = useRef();
@@ -35,7 +35,7 @@ function HomePage() {
 		/*
 		 * this will scroll to the bottom of the chat window when a new message is received
 		*/
-		scrollToBottom()
+		// scrollToBottom()
 	}, [messages])
 
 	useEffect(() => {
@@ -72,7 +72,7 @@ function HomePage() {
 			fetchRoomMessages()
 			fetchRoomMembers()
 			setIsLoadingMessages(false);
-			scrollToBottom()
+			// scrollToBottom()
 		}
 	}, [activeRoom])
 

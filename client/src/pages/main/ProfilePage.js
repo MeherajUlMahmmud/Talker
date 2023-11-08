@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { loadStorage } from '../../utils/persistLocalStorage';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/Navbar';
+import Navbar from '../../components/navbar/Navbar';
 
 function ProfilePage() {
 	const token = loadStorage('token');

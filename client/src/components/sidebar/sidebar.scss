@@ -1,0 +1,50 @@
+.sidebar_wrapper {
+	background-color: #1e1f22;
+	height: 100vh;
+	width: 80px;
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-top: 10px;
+
+	.sidebar_logo {
+		height: 65px;
+		width: 80px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.room_item {
+		// height: 80px;
+		// width: 80px;
+		display: flex;
+		border-radius: 50%;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
+		transition: 0.2s;
+		margin: 6px 0;
+
+		&:hover {
+			background-color: #303338;
+		}
+
+		.room_logo {
+			height: 50px;
+			width: 50px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border-radius: 50%;
+			color: #fff;
+			background-color: #303338;
+			transition: 0.2s;
+
+			&:hover {
+				background-color: #5764f2;
+			}
+		}
+	}
+}
