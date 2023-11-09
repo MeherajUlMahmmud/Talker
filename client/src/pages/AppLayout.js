@@ -24,7 +24,7 @@ function AppLayout() {
 		 * If socket is connected, fetch associated rooms
 		*/
 		if (token && user) {
-
+			navigate('/@me')
 			fetchAssociatedRooms()
 		} else {
 			navigate('/auth/login')

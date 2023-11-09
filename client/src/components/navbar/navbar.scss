@@ -2,12 +2,13 @@
 	height: 55px;
 	display: flex;
 	background-color: #303338;
+	position: absolute;
 
 	.header_wrapper {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		width: 300px;
+		width: 250px;
 		height: 100%;
 		padding: 0 20px;
 		border-right: 1px solid #3c3f44;

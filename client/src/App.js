@@ -7,6 +7,7 @@ import AppLayout from "./pages/AppLayout";
 import AuthLayout from "./pages/AuthLayout";
 import ChatLayout from "./pages/ChatLayout";
 import SettingsPage from "./pages/main/SettingsPage";
+import MePage from "./pages/mePage/MePage";
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
           <Route path="/" element={<AppLayout />}>
             <Route path="/" element={<ChatLayout />}>
               {/* Common Routes */}
-              <Route path="/" element={<HomePage />} />
+              <Route path="/@me" element={<MePage />} />
 
             </Route>
             {/* User */}

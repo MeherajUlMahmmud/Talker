@@ -23,8 +23,9 @@ code {
 		monospace;
 }
 
-.chat_page_wrapper {
+.page_wrapper {
 	display: flex;
-	height: 100vh;
+	flex-direction: column;
 	width: calc(100vw - 70px);
+	position: relative;
 }
