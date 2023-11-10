@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0x0057F287),
+      backgroundColor: Colors.grey.shade900,
       body: Container(
         padding: const EdgeInsets.all(10),
         child: Form(
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 25),
               CustomTextFormField(
                 width: width,
                 controller: passwordController,
@@ -158,6 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 25),
               CustomButton(
                 text: 'Login',
                 isLoading: isLoading,
@@ -171,7 +172,13 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account?"),
+                  Text(
+                    "Don't have an account?",
+                    style: TextStyle(
+                      color:
+                          Helper().createMaterialColor(const Color(0xFFF2F3F5)),
+                    ),
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacementNamed(
@@ -179,7 +186,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         SignUpScreen.routeName,
                       );
                     },
-                    child: const Text('Sign Up'),
+                    child: const Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        color: Color(0xFF2E3B62),
+                      ),
+                    ),
                   ),
                 ],
               ),

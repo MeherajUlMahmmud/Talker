@@ -56,7 +56,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               color: Helper().createMaterialColor(const Color(0xFFF2F3F5)),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           TextFormField(
             style: const TextStyle(
               color: Colors.white,
@@ -69,6 +69,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             decoration: InputDecoration(
               fillColor: Colors.white,
               hintText: widget.hintText,
+              hintStyle: TextStyle(
+                color: Helper().createMaterialColor(const Color(0xFFF2F3F5)),
+                fontWeight: FontWeight.bold,
+              ),
               suffixIcon: widget.suffixIcon != null
                   ? IconButton(
                       onPressed: () {
@@ -80,7 +84,13 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
                 borderSide: const BorderSide(
-                  color: Colors.white,
+                  color: Colors.black,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(widget.borderRadius),
+                borderSide: const BorderSide(
+                  color: Colors.black,
                 ),
               ),
             ),

@@ -35,7 +35,7 @@ class CustomButton extends StatelessWidget {
                 ? null
                 : onPressed(),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFF2E3B62),
+          backgroundColor: const Color(0xFF2E3B62),
           // backgroundColor: isDisabled == true || isLoading == true
           //     ? Colors.grey
           //     : Theme.of(context).elevatedButtonTheme.style.backgroundColor,
