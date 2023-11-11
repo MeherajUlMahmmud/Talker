@@ -1,27 +1,28 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
+import io from 'socket.io-client';
 import { loadStorage } from '../utils/persistLocalStorage';
 import { sendGetRequest } from '../apis/api';
 import { ASSOCIATED_ROOMS } from '../utils/urls';
 import RoomContext from '../contexts/RoomContext';
+import UserContext from '../contexts/UserContext';
+import SocketContext from '../contexts/SocketContext';
 
 function AppLayout() {
 	const navigate = useNavigate();
+
+	const socketRef = useRef();
 
 	const token = loadStorage('token');
 	const user = loadStorage('user');
 
 	const [rooms, setRooms] = useState([])
 	const [activeRoom, setActiveRoom] = useState(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState("");
-
 
 	useEffect(() => {
 		/*
 		 * If token is not present, redirect to login page
-		 * If token is present, fetch user details and connect to socket
-		 * If socket is connected, fetch associated rooms
+		 * If token is present, fetch associated rooms
 		*/
 		if (token && user) {
 			navigate('/@me')
@@ -29,9 +30,7 @@ function AppLayout() {
 		} else {
 			navigate('/auth/login')
 		}
-	}, [token])
-
-
+	}, [token]);
 
 	const fetchAssociatedRooms = () => {
 		/*
@@ -44,20 +43,19 @@ function AppLayout() {
 			.then((res) => {
 				console.log(res?.data);
 				setRooms(res?.data?.rooms)
-				setIsLoading(false)
 			})
 			.catch((err) => {
 				console.log(err);
-				setError(err?.response?.data || "Something went wrong");
-				setIsLoading(false);
 			});
 	}
 
 	return (
 		<RoomContext.Provider value={{ rooms, setRooms, activeRoom, setActiveRoom }}>
-			<Outlet
-			// context={[rooms]}
-			/>
+			<SocketContext.Provider value={{ socketRef }}>
+				<UserContext.Provider value={{ user, token }}>
+					<Outlet />
+				</UserContext.Provider>
+			</SocketContext.Provider>
 		</RoomContext.Provider>
 	)
 }

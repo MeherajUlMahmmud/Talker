@@ -8,6 +8,7 @@ import AuthLayout from "./pages/AuthLayout";
 import ChatLayout from "./pages/ChatLayout";
 import SettingsPage from "./pages/main/SettingsPage";
 import MePage from "./pages/mePage/MePage";
+import ServerPage from "./pages/serverPage/ServerPage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<ChatLayout />}>
               {/* Common Routes */}
               <Route path="/@me" element={<MePage />} />
+              <Route path="/room/:id" element={<ServerPage />} />
 
             </Route>
             {/* User */}

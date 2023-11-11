@@ -3,14 +3,20 @@ import './navbar.scss'
 import RoomContext from '../../contexts/RoomContext';
 
 function Navbar() {
-
 	const roomContext = useContext(RoomContext);
-
-	console.log(roomContext);
 
 	return (
 		<div className='navbar_wrapper'>
 			<Header title={roomContext?.activeRoom?.name} />
+			<div className='navbar_right'>
+				{
+					roomContext?.activeRoom && (
+						<div className='navbar_item'>
+							<i className="fas fa-users"></i>
+						</div>
+					)
+				}
+			</div>
 		</div>
 	)
 }

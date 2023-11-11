@@ -20,7 +20,7 @@
 		// height: 80px;
 		// width: 80px;
 		display: flex;
-		border-radius: 50%;
+		border-radius: 30%;
 		justify-content: center;
 		align-items: center;
 		cursor: pointer;
@@ -43,10 +43,12 @@
 			transition: 0.2s;
 
 			&:hover {
+				border-radius: 30%;
 				background-color: #5764f2;
 			}
 
 			&.active {
+				border-radius: 30%;
 				background-color: #5764f2;
 			}
 		}

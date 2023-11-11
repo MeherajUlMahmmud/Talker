@@ -2,6 +2,11 @@
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
+
+	// no scrollbar
+	::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 a {
@@ -28,4 +33,6 @@ code {
 	flex-direction: column;
 	width: calc(100vw - 70px);
 	position: relative;
+	// not scrollable
+	overflow: hidden;
 }
