@@ -47,10 +47,12 @@ exports.login = async function (req, res) {
 		}
 
 		const token = jwt.sign({ userId: user._id }, JWT_SECRET);
+
 		const userToSend = {
 			_id: user._id,
 			username: user.username,
 			name: user.name,
+			createdAt: user.createdAt,
 		};
 		res.json({ token, user: userToSend });
 	} catch (error) {
