@@ -4,16 +4,16 @@ const User = require("../models/user.model");
 
 exports.create_room = async function (req, res) {
 	const { userId } = req.userId;
-	const { roomName } = req.body;
+	const { name } = req.body;
 
 	try {
-		if (!roomName) {
+		if (!name) {
 			return res.status(400).json({ message: 'Room name is required' });
 		}
 
 		// Create a new room in the database
 		const room = new Room({
-			name: roomName,
+			name: name,
 			owner: userId, // Assuming you have the user ID stored in a variable called userId
 			members: [userId], // Add the owner to the list of members
 		});

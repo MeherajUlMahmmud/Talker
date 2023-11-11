@@ -6,11 +6,12 @@ import RoomContext from '../contexts/RoomContext';
 import Navbar from '../components/navbar/Navbar';
 import UserContext from '../contexts/UserContext';
 import SocketContext from '../contexts/SocketContext';
+import CreateRoomModal from '../components/create_room_modal/CreateRoomModal';
 
 function ChatLayout() {
 	const navigate = useNavigate();
 
-	const { rooms, activeRoom, setActiveRoom } = useContext(RoomContext);
+	const { rooms, activeRoom, setActiveRoom, showCreateRoomModal, setShowCreateRoomModal } = useContext(RoomContext);
 	const { socketRef } = useContext(SocketContext);
 	const { user, token } = useContext(UserContext);
 
@@ -52,6 +53,8 @@ function ChatLayout() {
 				rooms={rooms}
 				activeRoom={activeRoom}
 				setActiveRoom={setActiveRoom}
+				showCreateRoomModal={showCreateRoomModal}
+				setShowCreateRoomModal={setShowCreateRoomModal}
 			/>
 			<div style={{
 				marginLeft: '70px',
@@ -64,6 +67,15 @@ function ChatLayout() {
 					<Outlet />
 				</div>
 			</div>
+
+			{
+				showCreateRoomModal && (
+					<CreateRoomModal
+						token={token}
+						setShowCreateRoomModal={setShowCreateRoomModal}
+					/>
+				)
+			}
 		</div>
 	)
 }

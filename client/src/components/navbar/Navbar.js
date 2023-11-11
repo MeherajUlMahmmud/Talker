@@ -3,15 +3,17 @@ import './navbar.scss'
 import RoomContext from '../../contexts/RoomContext';
 
 function Navbar() {
-	const roomContext = useContext(RoomContext);
+	const { activeRoom, showMembersList, setShowMembersList } = useContext(RoomContext);
 
 	return (
 		<div className='navbar_wrapper'>
-			<Header title={roomContext?.activeRoom?.name} />
+			<Header title={activeRoom?.name} />
 			<div className='navbar_right'>
 				{
-					roomContext?.activeRoom && (
-						<div className='navbar_item'>
+					activeRoom && (
+						<div className={`navbar_item ${showMembersList && 'active'}`}
+							onClick={() => setShowMembersList(!showMembersList)}
+						>
 							<i className="fas fa-users"></i>
 						</div>
 					)

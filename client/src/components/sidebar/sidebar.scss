@@ -53,4 +53,23 @@
 			}
 		}
 	}
+
+	.room_create_btn {
+		height: 50px;
+		width: 50px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border-radius: 50%;
+		color: #fff;
+		background-color: #303338;
+		transition: 0.2s;
+		margin: 6px 0;
+		cursor: pointer;
+
+		&:hover {
+			border-radius: 30%;
+			background-color: #5764f2;
+		}
+	}
 }

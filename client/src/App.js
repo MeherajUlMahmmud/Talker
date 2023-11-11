@@ -1,12 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/main/HomePage";
-import ProfilePage from "./pages/main/ProfilePage";
 import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
 import AppLayout from "./pages/AppLayout";
 import AuthLayout from "./pages/AuthLayout";
 import ChatLayout from "./pages/ChatLayout";
-import SettingsPage from "./pages/main/SettingsPage";
 import MePage from "./pages/mePage/MePage";
 import ServerPage from "./pages/serverPage/ServerPage";
 
@@ -23,8 +20,8 @@ function App() {
 
             </Route>
             {/* User */}
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            {/* <Route path="/profile" element={<ProfilePage />} /> */}
+            {/* <Route path="/settings" element={<SettingsPage />} /> */}
           </Route>
 
           {/* Auth Routes */}

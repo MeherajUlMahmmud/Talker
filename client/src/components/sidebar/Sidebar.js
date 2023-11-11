@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './sidebar.scss'
 import { useNavigate } from 'react-router-dom';
 
-function Sidebar({ rooms, activeRoom, setActiveRoom }) {
+function Sidebar({ rooms, activeRoom, setActiveRoom, showCreateRoomModal, setShowCreateRoomModal }) {
 	const navigate = useNavigate();
 
 	return (
@@ -34,7 +34,9 @@ function Sidebar({ rooms, activeRoom, setActiveRoom }) {
 					)
 				})
 			}
-			<div className='room_item'>
+			<div className='room_create_btn'
+				onClick={() => setShowCreateRoomModal(true)}
+			>
 				<div className='room_logo'>+</div>
 			</div>
 		</div>

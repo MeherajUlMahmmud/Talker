@@ -18,6 +18,8 @@ function AppLayout() {
 
 	const [rooms, setRooms] = useState([])
 	const [activeRoom, setActiveRoom] = useState(null);
+	const [showCreateRoomModal, setShowCreateRoomModal] = useState(false)
+	const [showMembersList, setShowMembersList] = useState(true)
 
 	useEffect(() => {
 		/*
@@ -26,11 +28,14 @@ function AppLayout() {
 		*/
 		if (token && user) {
 			navigate('/@me')
-			fetchAssociatedRooms()
 		} else {
 			navigate('/auth/login')
 		}
 	}, [token]);
+
+	useEffect(() => {
+		fetchAssociatedRooms()
+	}, [showCreateRoomModal]);
 
 	const fetchAssociatedRooms = () => {
 		/*
@@ -50,7 +55,7 @@ function AppLayout() {
 	}
 
 	return (
-		<RoomContext.Provider value={{ rooms, setRooms, activeRoom, setActiveRoom }}>
+		<RoomContext.Provider value={{ rooms, setRooms, activeRoom, setActiveRoom, showCreateRoomModal, setShowCreateRoomModal, showMembersList, setShowMembersList }}>
 			<SocketContext.Provider value={{ socketRef }}>
 				<UserContext.Provider value={{ user, token }}>
 					<Outlet />
