@@ -76,6 +76,7 @@ exports.get_room_messages = async function (req, res) {
 };
 
 exports.add_room_member = async function (req, res) {
+	const { ownerId } = req.userId;
 	const { userId, roomId } = req.body;
 
 	try {
@@ -84,6 +85,11 @@ exports.add_room_member = async function (req, res) {
 
 		if (!user || !room) {
 			return res.status(400).json({ error: 'User or room does not exist' });
+		}
+
+		// Check if the requested user is the owner of the room
+		if (room.owner !== ownerId) {
+			return res.status(400).json({ message: 'You are not the owner of this room' });
 		}
 
 		// Add the user to the room's members array if they are not already a member
@@ -102,3 +108,98 @@ exports.add_room_member = async function (req, res) {
 		});
 	}
 };
+
+exports.remove_room_member = async function (req, res) {
+	const { userId } = req.userId;
+	const { memberId, roomId } = req.body;
+
+	if (!memberId || !roomId) {
+		return res.status(400).json({ error: 'Member ID and room ID are required' });
+	}
+
+	try {
+		const member = await User.findById(memberId);
+		const room = await Room.findById(roomId);
+
+		if (!member || !room) {
+			return res.status(400).json({ error: 'Member or room does not exist' });
+		}
+
+		// Check if the requested user is the owner of the room
+		const ownerId = room.owner._id.toString();
+		if (ownerId !== userId) {
+			return res.status(400).json({ message: 'You are not the owner of this room' });
+		}
+
+		// Remove the user from the room's members array if they are already a member
+		if (!room.members.includes(memberId)) {
+			return res.status(400).json({ error: 'User is not a member of the room' });
+		}
+		room.members.pull(memberId);
+
+		await room.save();
+
+		res.json({ message: 'User removed from room successfully' });
+	} catch (error) {
+		res.status(500).json({
+			error: error.message || 'Something went wrong',
+			message: 'Error removing user from room'
+		});
+	}
+}
+
+exports.update_room = async function (req, res) {
+	const { userId } = req.userId;
+	const { roomId } = req.params;
+	const { roomName, roomDescription } = req.body;
+
+	try {
+		if (!roomName) {
+			return res.status(400).json({ message: 'Room name is required' });
+		}
+
+		// Find the room by ID
+		const room = await Room.findById(roomId);
+
+		if (!room) {
+			return res.status(400).json({ message: 'Room does not exist' });
+		}
+
+		// Check if the requested user is the owner of the room
+		if (room.owner !== userId) {
+			return res.status(400).json({ message: 'You are not the owner of this room' });
+		}
+
+		// Update the room name and description
+		room.name = roomName;
+		room.description = roomDescription;
+
+		await room.save();
+
+		res.json({ message: 'Room updated successfully' });
+	} catch (error) {
+		res.status(500).json({
+			error: error.message || 'Something went wrong',
+			message: 'Error updating room'
+		});
+	}
+}
+
+exports.delete_room = async function (req, res) {
+	const roomId = req.params.roomId;
+
+	try {
+		// Find the room by ID and delete it
+		await Room.findByIdAndDelete(roomId);
+
+		// Delete all messages for the room
+		await Message.deleteMany({ room: roomId });
+
+		res.json({ message: 'Room deleted successfully' });
+	} catch (error) {
+		res.status(500).json({
+			error: error.message || 'Something went wrong',
+			message: 'Error deleting room'
+		});
+	}
+}

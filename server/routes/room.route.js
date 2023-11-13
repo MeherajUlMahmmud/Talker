@@ -30,5 +30,20 @@ router.post(
 	authorizeLoggedInUser,
 	RoomController.add_room_member
 );
+router.post(
+	"/remove-member",
+	authorizeLoggedInUser,
+	RoomController.remove_room_member
+);
+router.patch(
+	"/update/:roomId",
+	authorizeLoggedInUser,
+	RoomController.update_room
+);
+router.delete(
+	"/delete/:roomId",
+	authorizeLoggedInUser,
+	RoomController.delete_room
+);
 
 module.exports = router;
