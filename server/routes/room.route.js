@@ -21,6 +21,11 @@ router.get(
 	RoomController.get_room_members
 );
 router.get(
+	"/free-members/:roomId",
+	authorizeLoggedInUser,
+	RoomController.get_free_room_members
+);
+router.get(
 	"/messages/:roomId",
 	authorizeLoggedInUser,
 	RoomController.get_room_messages

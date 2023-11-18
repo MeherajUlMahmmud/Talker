@@ -24,6 +24,11 @@ function ServerPage() {
 		fetchRoomMembers()
 	}, [activeRoom]);
 
+
+	useEffect(() => {
+		fetchRoomMembers()
+	}, [showAddMemberModal]);
+
 	useEffect(() => {
 		scrollToBottom()
 	}, [messages]);
@@ -296,6 +301,7 @@ function ServerPage() {
 			{
 				showAddMemberModal && (
 					<AddMemberModal
+						activeRoom={activeRoom}
 						token={token}
 						setShowCreateRoomModal={setShowAddMemberModal}
 					/>
@@ -304,6 +310,7 @@ function ServerPage() {
 			{
 				showSettingsModal && (
 					<SettingsModal
+						activeRoom={activeRoom}
 						token={token}
 						setShowSettingsModal={setShowSettingsModal}
 					/>
@@ -313,7 +320,48 @@ function ServerPage() {
 	)
 }
 
-const AddMemberModal = ({ token, setShowCreateRoomModal }) => {
+const AddMemberModal = ({ activeRoom, token, setShowCreateRoomModal }) => {
+	const [freeMembers, setFreeMembers] = useState([])
+
+	useEffect(() => {
+		fetchFreeRoomMembers()
+	}, []);
+
+	const fetchFreeRoomMembers = () => {
+		/*
+		 * Fetch free room members
+		 * If successful, set free members
+		 * If unsuccessful, display the error message
+		*/
+		sendGetRequest('/room/free-members/' + activeRoom?._id, token)
+			.then((res) => {
+				console.log(res?.data);
+				setFreeMembers(res?.data?.members)
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	}
+
+	const handleAddMember = (memberId) => {
+		/*
+		 * Add member to the room
+		 * If successful, remove member from the free members list
+		 * If unsuccessful, display the error message
+		*/
+		sendPostRequest('/room/add-member', {
+			memberId: memberId,
+			roomId: activeRoom?._id,
+		}, token)
+			.then((res) => {
+				console.log(res?.data);
+				setFreeMembers((members) => members.filter((member) => member?._id !== memberId))
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	}
+
 	return (
 		<div className='modal_wrapper'>
 			<div className='add_member_modal'>
@@ -333,23 +381,29 @@ const AddMemberModal = ({ token, setShowCreateRoomModal }) => {
 							placeholder='Search...' />
 					</div>
 					<div className='modal_body_list'>
-						<div className='modal_body_list_item'>
-							<div className='modal_body_list_item_info'>
-								<div className='modal_body_list_item_img_sec'>
-									<img src={`https://via.placeholder.com/468x300?text=U`} className="add_member_modal_body_list_item_img" alt="" />
-								</div>
-								<div className='add_member_modal_body_list_item_data_sec'>
-									<div className='add_member_modal_body_list_item_name'>
-										Username
+						{
+							freeMembers.map((member) => {
+								return (
+									<div className='modal_body_list_item' key={member?._id}>
+										<div className='modal_body_list_item_info'>
+											<div className='modal_body_list_item_img_sec'>
+												<img src={`https://via.placeholder.com/468x300?text=${member?.username[0]}`} className="add_member_modal_body_list_item_img" alt="" />
+											</div>
+											<div className='add_member_modal_body_list_item_data_sec'>
+												<div className='add_member_modal_body_list_item_name'>
+													{member?.username}
+												</div>
+											</div>
+										</div>
+										<div className='modal_body_list_item_actions'>
+											<div className='modal_body_list_item_action' onClick={() => handleAddMember(member?._id)}>
+												<i className="fas fa-user-plus"></i>
+											</div>
+										</div>
 									</div>
-								</div>
-							</div>
-							<div className='modal_body_list_item_actions'>
-								<div className='modal_body_list_item_action'>
-									<i className="fas fa-user-plus"></i>
-								</div>
-							</div>
-						</div>
+								)
+							})
+						}
 					</div>
 				</div>
 			</div>
@@ -357,9 +411,10 @@ const AddMemberModal = ({ token, setShowCreateRoomModal }) => {
 	)
 }
 
-const SettingsModal = ({ token, setShowSettingsModal }) => {
+const SettingsModal = ({ activeRoom, token, setShowSettingsModal }) => {
 	const [inputs, setInputs] = useState({
-		serverName: '',
+		serverName: activeRoom?.name,
+		serverDescription: activeRoom?.description,
 	});
 
 	const handleOnChange = (e) => {
@@ -382,7 +437,7 @@ const SettingsModal = ({ token, setShowSettingsModal }) => {
 					<i className="fas fa-times"></i>
 				</div>
 				<div className='modal_header'>
-					Settings
+					Update Server
 				</div>
 				<form className='modal_body' onSubmit={handleOnSubmit}>
 					<div className='form_group'>
@@ -396,10 +451,18 @@ const SettingsModal = ({ token, setShowSettingsModal }) => {
 						/>
 					</div>
 					<div className='form_group'>
+						<textarea
+							className='form_input'
+							placeholder='Server Description'
+							name='serverDescription'
+							value={inputs.serverDescription}
+							onChange={(e) => handleOnChange(e)}
+						/>
 					</div>
 
 					<button
 						className='form_button'
+						disabled={inputs.serverName === activeRoom?.name && inputs.serverDescription === activeRoom?.description}
 					>
 						Save Changes
 					</button>

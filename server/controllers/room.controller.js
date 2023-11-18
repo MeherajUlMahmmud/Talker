@@ -59,6 +59,28 @@ exports.get_room_members = async function (req, res) {
 	}
 };
 
+exports.get_free_room_members = async function (req, res) {
+	const roomId = req.params.roomId;
+
+	try {
+		// Find the room by ID
+		const room = await Room.findById(roomId)
+		if (!room) {
+			return res.status(400).json({ message: 'Room does not exist' });
+		}
+
+		// Find all users that are not members of the room
+		const members = await User.find({ _id: { $nin: room.members } });
+
+		res.json({ members });
+	} catch (error) {
+		res.status(500).json({
+			error: error.message || 'Something went wrong',
+			message: 'Error getting room members'
+		});
+	}
+};
+
 exports.get_room_messages = async function (req, res) {
 	const roomId = req.params.roomId;
 
@@ -76,27 +98,28 @@ exports.get_room_messages = async function (req, res) {
 };
 
 exports.add_room_member = async function (req, res) {
-	const { ownerId } = req.userId;
-	const { userId, roomId } = req.body;
+	console.log(req.userId);
+	const { userId } = req.userId;
+	const { memberId, roomId } = req.body;
 
 	try {
-		const user = await User.findById(userId);
+		const member = await User.findById(memberId);
 		const room = await Room.findById(roomId);
 
-		if (!user || !room) {
-			return res.status(400).json({ error: 'User or room does not exist' });
+		if (!member || !room) {
+			return res.status(400).json({ error: 'Member or room does not exist' });
 		}
 
 		// Check if the requested user is the owner of the room
-		if (room.owner !== ownerId) {
+		if (room.owner.toString() !== userId) {
 			return res.status(400).json({ message: 'You are not the owner of this room' });
 		}
 
 		// Add the user to the room's members array if they are not already a member
-		if (room.members.includes(userId)) {
+		if (room.members.includes(memberId)) {
 			return res.status(400).json({ error: 'User is already a member of the room' });
 		}
-		room.members.push(userId);
+		room.members.push(memberId);
 
 		await room.save();
 
@@ -126,8 +149,7 @@ exports.remove_room_member = async function (req, res) {
 		}
 
 		// Check if the requested user is the owner of the room
-		const ownerId = room.owner._id.toString();
-		if (ownerId !== userId) {
+		if (room.owner._id.toString() !== userId) {
 			return res.status(400).json({ message: 'You are not the owner of this room' });
 		}
 
@@ -166,7 +188,7 @@ exports.update_room = async function (req, res) {
 		}
 
 		// Check if the requested user is the owner of the room
-		if (room.owner !== userId) {
+		if (room.owner._id.toString() !== userId) {
 			return res.status(400).json({ message: 'You are not the owner of this room' });
 		}
 

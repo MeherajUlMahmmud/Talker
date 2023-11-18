@@ -458,12 +458,12 @@
 						.modal_body_list_item_action {
 							border-radius: 50%;
 							padding: 5px;
-							color: #dbdee1;
+							color: #3498da;
 							cursor: pointer;
 							transition: all 0.2s ease-in-out;
 
 							&:hover {
-								color: #3498da;
+								transform: scale(1.2);
 							}
 						}
 					}
@@ -580,6 +580,11 @@
 
 				&:hover {
 					background-color: #4751c4;
+				}
+
+				&:disabled {
+					background-color: #bdc3c7;
+					cursor: not-allowed;
 				}
 			}
 		}

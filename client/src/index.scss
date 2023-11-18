@@ -28,6 +28,11 @@ code {
 		monospace;
 }
 
+textarea {
+	resize: none;
+	font-family: inherit;
+}
+
 .page_wrapper {
 	display: flex;
 	flex-direction: column;

@@ -100,7 +100,7 @@ function LoginPage() {
 						disabled={isLoading}
 						className="form_button"
 					>
-						Sign in
+						Log in
 					</button>
 
 					<p className="auth_account_label">
